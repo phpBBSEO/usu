@@ -1,0 +1,25 @@
+{
+	"name": "phpbbseo/usu",
+	"type": "phpbb-extension",
+	"description": "phpBB SEO Ultimate SEO URL for phpBB 3.1",
+	"homepage": "http://www.phpbb-seo.com/",
+	"keywords": ["phpbbSEO", "extension", "seo", "USU"],
+	"version": "2.0.0-b1",
+	"time": "2014-06-12",
+	"license": "GPL-2.0",
+	"authors": [{
+		"name": "dcz",
+		"email": "dcz@phpbb-seo.com",
+		"homepage": "http://www.phpbb-seo.com/",
+		"role": "Lead Developer"
+	}],
+	"require": {
+		"php": ">=5.3.3"
+	},
+	"extra": {
+		"display-name": "phpBB SEO - phpBB SEO Ultimate",
+		"soft-require": {
+			"phpbb/phpbb": "3.1.*@dev"
+		}
+	}
+}

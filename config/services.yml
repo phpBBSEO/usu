@@ -1,0 +1,23 @@
+#
+# @package Ultimate SEO URL phpBB SEO
+# @version $Id: services.yml 421 2014-07-08 08:38:44Z  $
+# @copyright (c) 2014 www.phpbb-seo.com
+# @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+#
+# You must indent with 4 spaces instead of 1 tab
+#
+services: 
+    phpbbseo.usu.listener:
+        class: phpbbseo\usu\event\listener
+        arguments:
+            - @config
+            - @auth
+            - @template
+            - @user
+            - @request
+            - @dbal.conn
+            - %core.root_path%
+            - %core.php_ext%
+        tags:
+            - { name: event.listener }
+

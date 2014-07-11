@@ -1,0 +1,46 @@
+<!--
+/**
+*
+* @package Ultimate SEO URL phpBB SEO
+* @version $Id: acp_overall_footer_after.html 423 2014-07-08 11:55:34Z  $
+* @copyright (c) 2014 www.phpbb-seo.com
+* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+*
+*/
+-->
+<!-- IF S_SEO_HTACCESS -->
+<script type="text/javascript">
+// <![CDATA[
+$(document).ready(function() {
+	if ($("#htaccess_toggle").length) {
+		$("#htaccess_toggle").on('click', function() {
+			var $this = $('#htaccess_code');
+			if ($this.is(':visible')) {
+				$this.hide(300);
+			} else {
+				$this.show(300);
+			}
+		}).css({cursor:'pointer'});
+		$("#htaccess_select").on('click', function() {
+			var
+				doc = document,
+				text = doc.getElementById('htaccess_code_select'),
+				range,
+				selection;
+			if (doc.body.createTextRange) { //ms
+				range = doc.body.createTextRange();
+				range.moveToElementText(text);
+				range.select();
+			} else if (window.getSelection) { //all others
+				selection = window.getSelection();
+				range = doc.createRange();
+				range.selectNodeContents(text);
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+		}).css({cursor:'pointer'});
+	}
+});
+// ]]>
+</script>
+<!-- ENDIF -->
