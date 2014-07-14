@@ -437,7 +437,7 @@ class core
 	* set_url( $url, $id = 0, $type = 'forum', $parent = '' )
 	* Prepare url first part and checks cache
 	*/
-	public static function set_url($url, $id = 0, $type = 'forum',  $parent = '')
+	public static function set_url($url, $id = 0, $type = 'forum', $parent = '')
 	{
 		if (empty(self::$seo_url[$type][$id]))
 		{

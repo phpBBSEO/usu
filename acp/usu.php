@@ -133,7 +133,7 @@ class usu
 							}
 							else if (@isset($this->multiple_options[$optionname][$key . '_values']))
 							{
-  								$this->dyn_select[$optionname . '_' . $key] = $this->multiple_options[$optionname][$key . '_values'];
+								$this->dyn_select[$optionname . '_' . $key] = $this->multiple_options[$optionname][$key . '_values'];
 								$display_vars['vars'][$optionname . '_' . $key] = array('lang' => $optionname . '_' . $key, 'validate' => 'string', 'type' => 'select', 'method' => 'select_string', 'explain' => true, 'lang_explain' => $optionname . '_' . $key . '_explain');
 								$this->new_config[$optionname . '_' . $key] = \phpbbseo\usu\core::$seo_opt[$optionname][$key];
 							}
