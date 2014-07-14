@@ -14,9 +14,11 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 {
 	public function effectively_installed()
 	{
-		if (!empty($this->config['seo_usu_on'])) {
+		if (!empty($this->config['seo_usu_on']))
+		{
 			return $this->db_tools->sql_column_exists($this->table_prefix . 'topics', 'topic_url');
 		}
+
 		return false;
 	}
 
@@ -29,8 +31,8 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 	{
 		return array(
 			'add_columns'	=> array(
-				TOPICS_TABLE => array(
-					'topic_url' => array('VCHAR:255', ''),
+				TOPICS_TABLE	=> array(
+					'topic_url'	=> array('VCHAR:255', ''),
 				),
 			),
 		);
@@ -40,12 +42,13 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 	{
 		return array(
 			'drop_columns'	=> array(
-				TOPICS_TABLE => array(
+				TOPICS_TABLE	=> array(
 					'topic_url',
 				),
 			),
 		);
 	}
+
 	public function update_data()
 	{
 		return array(
@@ -56,7 +59,7 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 					'acp',
 					'',
 					array(
-						'module_langname' => 'ACP_CAT_PHPBB_SEO',
+						'module_langname'	=> 'ACP_CAT_PHPBB_SEO',
 					),
 				)
 			),
@@ -66,7 +69,7 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 					'acp',
 					'ACP_CAT_PHPBB_SEO',
 					array(
-						'module_langname' => 'ACP_MOD_REWRITE',
+						'module_langname'	=> 'ACP_MOD_REWRITE',
 					),
 				)
 			),
@@ -76,10 +79,10 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 					'acp',
 					'ACP_MOD_REWRITE',
 					array(
-						'module_basename' => '\phpbbseo\usu\acp\usu',
-						'module_langname' => 'ACP_PHPBB_SEO_CLASS',
-						'module_mode'	=> 'settings',
-						'module_auth' => 'acl_a_board',
+						'module_basename'	=> '\phpbbseo\usu\acp\usu',
+						'module_langname'	=> 'ACP_PHPBB_SEO_CLASS',
+						'module_mode'		=> 'settings',
+						'module_auth'		=> 'acl_a_board',
 					),
 				)
 			),
@@ -89,10 +92,10 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 					'acp',
 					'ACP_MOD_REWRITE',
 					array(
-						'module_basename' => '\phpbbseo\usu\acp\usu',
-						'module_langname' => 'ACP_FORUM_URL',
-						'module_mode'	=> 'forum_url',
-						'module_auth' => 'acl_a_board',
+						'module_basename'	=> '\phpbbseo\usu\acp\usu',
+						'module_langname'	=> 'ACP_FORUM_URL',
+						'module_mode'		=> 'forum_url',
+						'module_auth'		=> 'acl_a_board',
 					),
 				),
 			),
@@ -102,10 +105,10 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 					'acp',
 					'ACP_MOD_REWRITE',
 					array(
-						'module_basename' => '\phpbbseo\usu\acp\usu',
-						'module_langname' => 'ACP_HTACCESS',
-						'module_mode'	=> 'htaccess',
-						'module_auth' => 'acl_a_board',
+						'module_basename'	=> '\phpbbseo\usu\acp\usu',
+						'module_langname'	=> 'ACP_HTACCESS',
+						'module_mode'		=> 'htaccess',
+						'module_auth'		=> 'acl_a_board',
 					),
 				)
 			),
@@ -115,10 +118,10 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 					'acp',
 					'ACP_MOD_REWRITE',
 					array(
-						'module_basename' => '\phpbbseo\usu\acp\usu',
-						'module_langname' => 'ACP_SEO_EXTENDED',
-						'module_mode'	=> 'extended',
-						'module_auth' => 'acl_a_board',
+						'module_basename'	=> '\phpbbseo\usu\acp\usu',
+						'module_langname'	=> 'ACP_SEO_EXTENDED',
+						'module_mode'		=> 'extended',
+						'module_auth'		=> 'acl_a_board',
 					),
 				)
 			),
