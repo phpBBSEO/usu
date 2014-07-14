@@ -53,7 +53,7 @@ class usu
 		{
 			$this->seo_unset_opts = array('cache_layer', 'rem_ids');
 		}
-		elseif (!\phpbbseo\usu\core::$seo_opt['cache_layer'])
+		else if (!\phpbbseo\usu\core::$seo_opt['cache_layer'])
 		{
 			$this->seo_unset_opts = array('rem_ids');
 		}
@@ -111,13 +111,13 @@ class usu
 						$display_vars['vars'][$optionvalue] = array('lang' => $optionvalue, 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true, 'lang_explain' => $optionvalue . '_explain');
 						$this->new_config[$optionvalue] = \phpbbseo\usu\core::$seo_opt[$optionvalue];
 					}
-					elseif (@isset($this->multiple_options[$optionvalue . '_values']))
+					else if (@isset($this->multiple_options[$optionvalue . '_values']))
 					{
 						$this->dyn_select[$optionvalue] = $this->multiple_options[$optionvalue . '_values'];
 						$display_vars['vars'][$optionvalue] = array('lang' => $optionvalue, 'validate' => 'string', 'type' => 'select', 'method' => 'select_string', 'explain' => true, 'lang_explain' => $optionvalue . '_explain');
 						$this->new_config[$optionvalue] = \phpbbseo\usu\core::$seo_opt[$optionvalue];
 					}
-					elseif (is_array($optionvalue))
+					else if (is_array($optionvalue))
 					{
 						$display_vars['vars']['legend' . $i] = $optionname;
 						$i++;
@@ -131,7 +131,7 @@ class usu
 								$display_vars['vars'][$optionname . '_' . $key] = array('lang' => $optionname . '_' . $key, 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true, 'lang_explain' => $optionname . '_' . $key . '_explain');
 								$this->new_config[$optionname . '_' . $key] = \phpbbseo\usu\core::$seo_opt[$optionname][$key];
 							}
-							elseif (@isset($this->multiple_options[$optionname][$key . '_values']))
+							else if (@isset($this->multiple_options[$optionname][$key . '_values']))
 							{
   								$this->dyn_select[$optionname . '_' . $key] = $this->multiple_options[$optionname][$key . '_values'];
 								$display_vars['vars'][$optionname . '_' . $key] = array('lang' => $optionname . '_' . $key, 'validate' => 'string', 'type' => 'select', 'method' => 'select_string', 'explain' => true, 'lang_explain' => $optionname . '_' . $key . '_explain');
@@ -471,7 +471,7 @@ class usu
 						}
 					}
 				}
-				elseif ($mode == 'settings')
+				else if ($mode == 'settings')
 				{
 					if (isset($this->array_type_cfg[$config_name]) && isset(\phpbbseo\usu\core::$seo_opt[$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']]))
 					{
@@ -479,26 +479,26 @@ class usu
 						{
 							\phpbbseo\usu\core::$cache_config['settings'][$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']] = ($config_value == 1) ? true : false;
 						}
-						elseif (is_numeric(\phpbbseo\usu\core::$seo_opt[$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']]))
+						else if (is_numeric(\phpbbseo\usu\core::$seo_opt[$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']]))
 						{
 							\phpbbseo\usu\core::$cache_config['settings'][$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']] = intval($config_value);
 						}
-						elseif (is_string(\phpbbseo\usu\core::$seo_opt[$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']]))
+						else if (is_string(\phpbbseo\usu\core::$seo_opt[$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']]))
 						{
 							\phpbbseo\usu\core::$cache_config['settings'][$this->array_type_cfg[$config_name]['main']][$this->array_type_cfg[$config_name]['sub']] = $config_value;
 						}
 					}
-					elseif (isset(\phpbbseo\usu\core::$seo_opt[$config_name]))
+					else if (isset(\phpbbseo\usu\core::$seo_opt[$config_name]))
 					{
 						if (is_bool(\phpbbseo\usu\core::$seo_opt[$config_name]))
 						{
 							\phpbbseo\usu\core::$cache_config['settings'][$config_name] = ($config_value == 1) ? true : false;
 						}
-						elseif (is_numeric(\phpbbseo\usu\core::$seo_opt[$config_name]))
+						else if (is_numeric(\phpbbseo\usu\core::$seo_opt[$config_name]))
 						{
 							\phpbbseo\usu\core::$cache_config['settings'][$config_name] = intval($config_value);
 						}
-						elseif (is_string(\phpbbseo\usu\core::$seo_opt[$config_name]))
+						else if (is_string(\phpbbseo\usu\core::$seo_opt[$config_name]))
 						{
 							\phpbbseo\usu\core::$cache_config['settings'][$config_name] = $config_value;
 						}
@@ -531,7 +531,7 @@ class usu
 						$db_tools->db->sql_return_on_error(false);
 					}
 				}
-				elseif ($mode == 'extended')
+				else if ($mode == 'extended')
 				{
 					/*if ($related_installed && $config_name === 'seo_related') {
 						$fulltext = 0;
@@ -612,7 +612,7 @@ class usu
 					add_log('admin', 'SEO_LOG_CONFIG_' . strtoupper($mode));
 				}
 			}
-			elseif ($mode == 'extended')
+			else if ($mode == 'extended')
 			{
 				add_log('admin', 'SEO_LOG_CONFIG_' . strtoupper($mode));
 				trigger_error($user->lang['CONFIG_UPDATED'] . adm_back_link($this->u_action));
@@ -688,11 +688,11 @@ class usu
 			{
 				$l_explain = (isset($user->lang[$vars['lang_explain']])) ? $user->lang[$vars['lang_explain']] : $vars['lang_explain'];
 			}
-			elseif ($vars['explain'] && isset($vars['lang_explain_custom']))
+			else if ($vars['explain'] && isset($vars['lang_explain_custom']))
 			{
 				$l_explain = $vars['lang_explain_custom'];
 			}
-			elseif ($vars['explain'])
+			else if ($vars['explain'])
 			{
 				$l_explain = (isset($user->lang[$vars['lang'] . '_EXPLAIN'])) ? $user->lang[$vars['lang'] . '_EXPLAIN'] : '';
 			}
@@ -750,7 +750,7 @@ class usu
 	/**
 	*  seo_advices Always needed :-)
 	*/
-	function seo_advices($url, $forum_id, $cached = FALSE, $error_cust = '')
+	function seo_advices($url, $forum_id, $cached = false, $error_cust = '')
 	{
 		global $user;
 

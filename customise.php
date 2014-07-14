@@ -8,22 +8,28 @@
 *
 */
 namespace phpbbseo\usu;
+
 /**
 * customize Class
 * www.phpBB-SEO.com
 * @package Ultimate SEO URL phpBB SEO
 */
-class customise {
+class customise
+{
 	/**
 	* init()
 	*/
-	public static function init() {
+	public static function init()
+	{
 	}
+
 	/**
 	* inject()
 	*/
-	public static function inject() {
+	public static function inject()
+	{
 		global $phpEx, $config, $phpbb_root_path;
+
 		// ===> Custom url replacements <===
 		// Here you can set up custom replacements to be used in title injection.
 		// Example : array( 'find' => 'replace')
@@ -73,7 +79,8 @@ class customise {
 		//
 
 		// ==> Special for lazy French, others may delete this part
-		if ( strpos($config['default_lang'], 'fr') !== false ) {
+		if (strpos($config['default_lang'], 'fr') !== false)
+		{
 			core::$seo_static['user'] = 'membre';
 			core::$seo_static['group'] = 'groupe';
 			core::$seo_static['global_announce'] = 'annonces';
