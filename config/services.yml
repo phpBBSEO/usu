@@ -1,6 +1,6 @@
 #
 # @package Ultimate SEO URL phpBB SEO
-# @version $Id: services.yml 421 2014-07-08 08:38:44Z  $
+# @version $$
 # @copyright (c) 2014 www.phpbb-seo.com
 # @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 #
@@ -20,3 +20,10 @@ services:
             - %core.php_ext%
         tags:
             - { name: event.listener }
+    pagination:
+        class: phpbbseo\usu\pagination
+        arguments:
+            - @template
+            - @user
+            - @controller.helper
+            - %core.php_ext%

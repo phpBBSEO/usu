@@ -3,7 +3,7 @@
 *
 * acp_usu_install [english]
 * @package Ultimate SEO URL phpBB SEO
-* @version $Id: acp_usu_install.php 420 2014-07-07 19:29:51Z  $
+* @version $$
 * @copyright (c) 2006 - 2014 www.phpbb-seo.com
 * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *

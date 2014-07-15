@@ -2,7 +2,7 @@
 /**
 *
 * @package Ultimate SEO URL phpBB SEO
-* @version $Id: listener.php 431 2014-07-10 12:44:07Z  $
+* @version $$
 * @copyright (c) 2014 www.phpbb-seo.com
 * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *
@@ -88,15 +88,18 @@ class listener implements EventSubscriberInterface
 	static public function getSubscribedEvents()
 	{
 		return array(
-			'core.common'						=> 'core_common',
-			'core.page_header_after'			=> 'core_page_header_after',
-			'core.page_footer'					=> 'core_page_footer',
-			'core.user_setup'					=> 'core_user_setup',
-			'core.viewforum_modify_topicrow'	=> 'core_viewforum_modify_topicrow',
-			'core.viewtopic_modify_page_title'	=> 'core_viewtopic_modify_page_title',
-			'core.viewtopic_modify_post_row'	=> 'core_viewtopic_modify_post_row',
-			'core.memberlist_view_profile'		=> 'core_memberlist_view_profile',
-			'core.modify_username_string'		=> 'core_modify_username_string',
+			'core.common' => 'core_common',
+			'core.page_header_after' => 'core_page_header_after',
+			'core.page_footer' => 'core_page_footer',
+			'core.user_setup' => 'core_user_setup',
+			'core.viewforum_modify_topicrow' => 'core_viewforum_modify_topicrow',
+			'core.viewtopic_modify_page_title' => 'core_viewtopic_modify_page_title',
+			'core.viewtopic_modify_post_row' => 'core_viewtopic_modify_post_row',
+			'core.memberlist_view_profile' => 'core_memberlist_view_profile',
+			'core.modify_username_string' => 'core_modify_username_string',
+			'core.append_sid' => 'core_append_sid',
+			'core.submit_post_end' => 'core_submit_post_end',
+			'core.posting_modify_template_vars' => 'core_posting_modify_template_vars',
 		);
 	}
 
@@ -214,10 +217,6 @@ class listener implements EventSubscriberInterface
 								WHERE topic_id = $topic_id";
 							$this->db->sql_query($sql);
 						}
-					}
-					else
-					{
-						$topic_data['topic_url'] = '';
 					}
 				}
 				else
@@ -562,5 +561,169 @@ class listener implements EventSubscriberInterface
 
 		$username_string = str_replace(array('{PROFILE_URL}', '{USERNAME_COLOUR}', '{USERNAME}'), array($profile_url, $event['username_colour'], $event['username']), (!$event['username_colour']) ? $event['_profile_cache']['tpl_profile'] : $event['_profile_cache']['tpl_profile_colour']);
 		$event['username_string'] = $username_string;
+	}
+
+	/*
+	* core_append_sid event
+	* you can speed up this if you add :
+	*
+
+	// www.phpBB-SEO.com SEO TOOLKIT BEGIN
+	// We bypass events/hooks here, the same effect as a standalone event/hook,
+	// which we want, but much faster ;-)
+	if (!empty(\phpbbseo\usu\core::$seo_opt['url_rewrite']))
+	{
+		return \phpbbseo\usu\core::url_rewrite($url, $params, $is_amp, $session_id);
+	}
+	// www.phpBB-SEO.com SEO TOOLKIT END
+
+	*
+	* after :
+	*
+
+function append_sid($url, $params = false, $is_amp = true, $session_id = false)
+{
+
+	*
+	* in includes/fucntions.php
+	*
+	*/
+	public function core_append_sid($event)
+	{
+		if (!empty(\phpbbseo\usu\core::$seo_opt['url_rewrite']))
+		{
+			$event['append_sid_overwrite'] = \phpbbseo\usu\core::url_rewrite($event['url'], $event['params'], $event['is_amp'], $event['session_id']);
+		}
+	}
+
+	public function core_submit_post_end($event)
+	{
+		global $mode, $post_data; // god save hax
+		$data = $event['data'];
+		$post_id = $data['post_id'];
+		$forum_id = $data['forum_id'];
+		// for some reasons, $post_mode cannot be globallized without being nullized ...
+		if ($mode == 'post')
+		{
+			$post_mode = 'post';
+		}
+		else if ($mode != 'edit')
+		{
+			$post_mode = 'reply';
+		}
+		else if ($mode == 'edit')
+		{
+			$post_mode = ($data['topic_posts_approved'] + $data['topic_posts_unapproved'] + $data['topic_posts_softdeleted'] == 1) ? 'edit_topic' : (($data['topic_first_post_id'] == $data['post_id']) ? 'edit_first_post' : (($data['topic_last_post_id'] == $data['post_id']) ? 'edit_last_post' : 'edit'));
+		}
+		if ($mode == 'post' || ($mode == 'edit' && $data['topic_first_post_id'] == $post_id))
+		{
+			\phpbbseo\usu\core::set_url($data['forum_name'], $forum_id, 'forum');
+			$_parent = $post_data['topic_type'] == POST_GLOBAL ? \phpbbseo\usu\core::$seo_static['global_announce'] : \phpbbseo\usu\core::$seo_url['forum'][$forum_id];
+			$_t = !empty($data['topic_id']) ? max(0, (int) $data['topic_id'] ) : 0;
+			$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc(request_var('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
+			if (!\phpbbseo\usu\core::check_url('topic', $_url, $_parent))
+			{
+				if (!empty($_url))
+				{
+					// Here we get rid of the seo delim (-t) and put it back even in simple mod
+					// to be able to handle all cases at once
+					$_url = preg_replace('`' . \phpbbseo\usu\core::$seo_delim['topic'] . '$`i', '', $_url);
+					$_title = \phpbbseo\usu\core::get_url_info('topic', $_url . \phpbbseo\usu\core::$seo_delim['topic'] . $_t);
+				}
+				else
+				{
+					$_title = \phpbbseo\usu\core::$modrtype > 2 ? censor_text($post_data['post_subject']) : '';
+				}
+				unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
+				$_url = \phpbbseo\usu\core::get_url_info('topic', \phpbbseo\usu\core::prepare_url( 'topic', $_title, $_t, $_parent ,  (( empty($_title) || ($_title == \phpbbseo\usu\core::$seo_static['topic']) ) ? true : false)), 'url');
+				unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
+			}
+			$data['topic_url'] = $post_data['topic_url'] = $_url;
+		}
+
+		switch ($post_mode)
+		{
+			case 'post':
+			case 'edit_topic':
+			case 'edit_first_post':
+				if (isset($data['topic_url']))
+				{
+					$sql = 'UPDATE ' . TOPICS_TABLE . '
+						SET ' . $this->db->sql_build_array('UPDATE', array('topic_url' => $data['topic_url'])) . '
+						WHERE topic_id = ' . (int) $data['topic_id'];
+					$this->db->sql_query($sql);
+				}
+				break;
+		}
+		\phpbbseo\usu\core::set_url($data['forum_name'], $data['forum_id'], 'forum');
+
+		$params = $add_anchor = '';
+		if ($data['post_visibility'] == ITEM_APPROVED)
+		{
+			$params .= '&amp;t=' . $data['topic_id'];
+
+			if ($mode != 'post')
+			{
+				$params .= '&amp;p=' . $data['post_id'];
+				$add_anchor = '#p' . $data['post_id'];
+			}
+		}
+		else if ($mode != 'post' && $post_mode != 'edit_first_post' && $post_mode != 'edit_topic')
+		{
+			$params .= '&amp;t=' . $data['topic_id'];
+		}
+		if ($params)
+		{
+			$data['topic_type'] = $post_data['topic_type'];
+			\phpbbseo\usu\core::prepare_topic_url($data);
+		}
+		$url = (!$params) ? "{$this->phpbb_root_path}viewforum.$this->php_ext" : "{$this->phpbb_root_path}viewtopic.$this->php_ext";
+		$url = \phpbbseo\usu\core::url_rewrite($url, 'f=' . $data['forum_id'] . $params, true, false, true) . $add_anchor;
+
+		$event['url'] = $url;
+		$event['data'] = $data;
+	}
+
+	public function core_posting_modify_template_vars($event)
+	{
+		$page_data = $event['page_data'];
+		$submit = $event['submit'];
+		$preview = $event['preview'];
+		$refresh = $event['refresh'];
+		$mode = $event['mode'];
+		$post_id = $event['post_id'];
+		$forum_id = $event['forum_id'];
+		$post_data = $event['post_data'];
+		if ($submit || $preview || $refresh)
+		{
+			if ($mode == 'post' || ($mode == 'edit' && $post_data['topic_first_post_id'] == $post_id))
+			{
+				\phpbbseo\usu\core::set_url($post_data['forum_name'], $forum_id, 'forum');
+				$_parent = $post_data['topic_type'] == POST_GLOBAL ? \phpbbseo\usu\core::$seo_static['global_announce'] : \phpbbseo\usu\core::$seo_url['forum'][$forum_id];
+				$_t = !empty($post_data['topic_id']) ? max(0, (int) $post_data['topic_id'] ) : 0;
+				$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc(request_var('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
+				if (!\phpbbseo\usu\core::check_url('topic', $_url, $_parent))
+				{
+					if (!empty($_url))
+					{
+						// Here we get rid of the seo delim (-t) and put it back even in simple mod
+						// to be able to handle all cases at once
+						$_url = preg_replace('`' . \phpbbseo\usu\core::$seo_delim['topic'] . '$`i', '', $_url);
+						$_title = \phpbbseo\usu\core::get_url_info('topic', $_url . \phpbbseo\usu\core::$seo_delim['topic'] . $_t);
+					}
+					else
+					{
+						$_title = \phpbbseo\usu\core::$modrtype > 2 ? censor_text($post_data['post_subject']) : '';
+					}
+					unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
+					$_url = \phpbbseo\usu\core::get_url_info('topic', \phpbbseo\usu\core::prepare_url( 'topic', $_title, $_t, $_parent ,  (( empty($_title) || ($_title == \phpbbseo\usu\core::$seo_static['topic']) ) ? true : false)), 'url');
+					unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
+				}
+				$post_data['topic_url'] = $_url;
+			}
+		}
+		$page_data['TOPIC_URL'] = isset($post_data['topic_url']) ? preg_replace('`' . \phpbbseo\usu\core::$seo_delim['topic'] . '$`i', '', $post_data['topic_url']) : '';
+		$page_data['S_URL'] = ($mode == 'post' || ($mode == 'edit' && $post_id == $post_data['topic_first_post_id'])) ? \phpbbseo\usu\core::url_can_edit($forum_id) : false;
+		$event['page_data'] = $page_data;
 	}
 }

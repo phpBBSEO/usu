@@ -2,7 +2,7 @@
 /**
 *
 * @package Ultimate SEO URL phpBB SEO
-* @version $Id: release_2_0_0_b1.php 421 2014-07-08 08:38:44Z  $
+* @version $$
 * @copyright (c) 2014 www.phpbb-seo.com
 * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *

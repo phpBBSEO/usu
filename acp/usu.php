@@ -2,7 +2,7 @@
 /**
 *
 * @package Ultimate SEO URL phpBB SEO
-* @version $Id: usu.php 423 2014-07-08 11:55:34Z  $
+* @version $$
 * @copyright (c) 2006 - 2014 www.phpbb-seo.com
 * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *
@@ -507,12 +507,7 @@ class usu
 					// Let's make sure that the proper field was added to the topic table
 					if ($config_name === 'sql_rewrite' && $config_value == 1 && !\phpbbseo\usu\core::$seo_opt['sql_rewrite'])
 					{
-						if (!class_exists('phpbb_db_tools'/*, false*/))
-						{
-							require($phpbb_root_path . 'includes/db/db_tools.' . $phpEx);
-						}
-
-						$db_tools = new phpbb_db_tools($db);
+						$db_tools = new \phpbb\db\tools($db);
 						$db_tools->db->sql_return_on_error(true);
 
 						if (!$db_tools->sql_column_exists(TOPICS_TABLE, 'topic_url'))
@@ -522,9 +517,9 @@ class usu
 
 						$additional_notes = sprintf($user->lang['SYNC_TOPIC_URL_NOTE'], '<a href="' . \phpbbseo\usu\core::$seo_path['phpbb_url'] . 'phpbb_seo/sync_url.' . $phpEx . '" onclick="window.open(this.href); return false;">', '</a>');
 
-						if ($db_tools->db->sql_error_triggered)
+						if ($db_tools->db->get_sql_error_triggered())
 						{
-							$error[] = '<b>' . $user->lang['sql_rewrite'] . '</b> : ' . $user->lang['SEO_SQL_ERROR'] . ' [ ' . $db_tools->db->sql_layer . ' ] : ' . $db_tools->db->sql_error_returned['message'] . ' [' . $db_tools->db->sql_error_returned['code'] . ']' . '<br/>' . $user->lang['SEO_SQL_TRY_MANUALLY'] . '<br/>' . $db_tools->db->sql_error_sql;
+							$error[] = '<b>' . $user->lang['sql_rewrite'] . '</b> : ' . $user->lang['SEO_SQL_ERROR'] . ' [ ' . $db_tools->db->get_sql_layer() . ' ] : ' . $db_tools->db->sql_error_returned['message'] . ' [' . $db_tools->db->sql_error_returned['code'] . ']' . '<br/>' . $user->lang['SEO_SQL_TRY_MANUALLY'] . '<br/>' . $db_tools->db->sql_error_sql;
 							$submit = false;
 						}
 
@@ -536,7 +531,7 @@ class usu
 					/*if ($related_installed && $config_name === 'seo_related') {
 						$fulltext = 0;
 						$nothing_to_do = false;
-						if ($db->sql_layer == 'mysql4' || $db->sql_layer == 'mysqli') {
+						if ($db->get_sql_layer() == 'mysql4' || $db->get_sql_layer() == 'mysqli') {
 							$add = $remove = $alter = false;
 							if ($config_value && !$config['seo_related']) {
 								$alter = $add = true;
@@ -550,11 +545,9 @@ class usu
 								@set_time_limit(0);
 								@ini_set('memory_limit', '128M');
 								// use db_tools to check the index
-								if (!class_exists('phpbb_db_tools')) {
-									require($phpbb_root_path . 'includes/db/db_tools.' . $phpEx);
-								}
-								if (empty($db_tools)) {
-									$db_tools = new phpbb_db_tools($db);
+								if (empty($db_tools))
+								{
+									$db_tools = new \phpbb\db\tools($db);
 								}
 								$indexes = $db_tools->sql_list_index(TOPICS_TABLE);
 								if (in_array('topic_tft', $indexes)) {
@@ -576,8 +569,8 @@ class usu
 									}
 									$db->sql_return_on_error(true);
 									$db->sql_query($sql);
-									if ($db->sql_error_triggered) {
-										$error[] = '<b>' . $user->lang['RELATED_TOPICS'] . '</b> : ' . $user->lang['SEO_SQL_ERROR'] . ' [ ' . $db->sql_layer . ' ] : ' . $db->sql_error_returned['message'] . ' [' . $db->sql_error_returned['code'] . ']' . '<br/>' . $user->lang['SEO_SQL_TRY_MANUALLY'] . '<br/>' . $db->sql_error_sql;
+									if ($db->get_sql_error_triggered()) {
+										$error[] = '<b>' . $user->lang['RELATED_TOPICS'] . '</b> : ' . $user->lang['SEO_SQL_ERROR'] . ' [ ' . $db->get_sql_layer() . ' ] : ' . $db->sql_error_returned['message'] . ' [' . $db->sql_error_returned['code'] . ']' . '<br/>' . $user->lang['SEO_SQL_TRY_MANUALLY'] . '<br/>' . $db->sql_error_sql;
 										$submit = false;
 										$config_value = 0;
 									}
@@ -715,8 +708,6 @@ class usu
 	*/
 	function forum_url_input($value, $key)
 	{
-		global $user;
-
 		return '<input id="' . $key . '" type="text" size="40" maxlength="255" name="config[' . $key . ']" value="' . $value . '" /> ';
 	}
 

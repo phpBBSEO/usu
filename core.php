@@ -2,7 +2,7 @@
 /**
 *
 * @package Ultimate SEO URL phpBB SEO
-* @version $Id: core.php 431 2014-07-10 12:44:07Z  $
+* @version $$
 * @copyright (c) 2006 - 2014 www.phpbb-seo.com
 * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *
@@ -290,6 +290,10 @@ class core
 			),
 			self::$rewrite_method[$phpbb_root_path]
 		);
+		// This hax is required because phpBB Path helper is tricked
+		// into thinking our virtual dirs are real
+		self::$rewrite_method[$phpbb_root_path . '../']['viewforum'] = 'viewforum';
+		self::$rewrite_method[$phpbb_root_path . '../']['viewtopic'] = 'viewtopic';
 		self::$rewrite_method[$phpbb_root_path . 'download/']['file'] = self::$seo_opt['rewrite_files'] ? 'phpbb_files' : '';
 
 		// allow empty ext
@@ -853,60 +857,13 @@ class core
 			}
 			else
 			{
-				$params[] = $key . (!trim($value) ? '' : '=' . $value);
+				// until https://tracker.phpbb.com/browse/PHPBB3-12852 is fixed
+				// $params[] = $key . (!trim($value) ? '' : '=' . $value);
+				$params[] = $key . '=' . $value;
 			}
 		}
 
 		return $url_delim . implode($amp_delim , $params);
-	}
-
-	/**
-	* paginate
-	*
-	*/
-	public static function paginate($base_url, $on_page, $start_name, $per_page)
-	{
-		global $phpEx;
-
-		static $paginated = array();
-
-		if (!isset($paginated[$base_url]))
-		{
-			$rewriten = self::url_rewrite($base_url);
-			@list($rewriten, $qs) = explode('?', $rewriten, 2);
-
-			if (
-				// rewriten urls are absolute
-				!preg_match('`^(https?\:)?//`i', $rewriten) ||
-				// they are not php scripts
-				preg_match('`\.' . $phpEx . '$`i', $rewriten)
-			)
-			{
-				// in such case, rewrite as usual
-				$url_delim = (strpos($base_url, '?') === false) ? '?' : ((strpos($base_url, '?') === strlen($base_url) - 1) ? '' : '&amp;');
-				$paginated[$base_url] = $base_url . $url_delim . '%1\$s=%2\$s';
-			}
-			else
-			{
-				$hasExt = preg_match('`^((https?\:)?//[^/]+.+)(\.[a-z0-9]+)$`i', $rewriten);
-
-				if ($hasExt)
-				{
-					// start location is before the ext
-					$rewriten = preg_replace('`^((https?\:)?//[^/]+.+)(\.[a-z0-9]+)$`i', '\1' . self::$seo_delim['start'] . '%2\$s\3', $rewriten);
-				}
-				else
-				{
-					// start is appened
-					$rewriten = rtrim($rewriten, '/') . '/' . self::$seo_static['pagination'] .  '%2$s' . self::$seo_ext['pagination'];
-				}
-
-				$paginated[$base_url] = $rewriten . ($qs ? "?$qs" : '');
-			}
-		}
-
-		// we'll see if start_name has use cases, and we can still work with rewriterules
-		return ($on_page > 1) ? sprintf($paginated[$base_url], $start_name, ($on_page - 1) * $per_page) : $base_url;
 	}
 
 	/**
@@ -1180,7 +1137,7 @@ class core
 		if (strpos(urldecode($url), "\n") !== false || strpos(urldecode($url), "\r") !== false || strpos($url, ';') !== false)
 		{
 			send_status_line(400, 'Bad Request');
-			trigger_error('Tried to redirect to potentially insecure url.', E_USER_ERROR);
+			trigger_error('INSECURE_REDIRECT', E_USER_ERROR);
 		}
 
 		// Now, also check the protocol and for a valid url the last time...
@@ -1190,7 +1147,7 @@ class core
 		if ($url_parts === false || empty($url_parts['scheme']) || !in_array($url_parts['scheme'], $allowed_protocols))
 		{
 			send_status_line(400, 'Bad Request');
-			trigger_error('Tried to redirect to potentially insecure url.', E_USER_ERROR);
+			trigger_error('INSECURE_REDIRECT', E_USER_ERROR);
 		}
 
 		send_status_line($code, $supported_headers[$code]);
