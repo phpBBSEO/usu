@@ -210,7 +210,7 @@ class listener implements EventSubscriberInterface
 						}
 
 						unset(\phpbbseo\usu\core::$seo_url['topic'][$topic_id]);
-	
+
 						$topic_data['topic_url'] = \phpbbseo\usu\core::get_url_info('topic', \phpbbseo\usu\core::prepare_url( 'topic', $_title, $topic_id, $_parent, (( empty($_title) || ($_title == \phpbbseo\usu\core::$seo_static['topic']) ) ? true : false) ), 'url');
 
 						unset(\phpbbseo\usu\core::$seo_url['topic'][$topic_id]);
