@@ -17,7 +17,7 @@ class format_url_test extends \phpbb_test_case
 
 		$phpbb_root_path = './';
 
-		$config = new \phpbb\config\config(new array(
+		$config = new \phpbb\config\config(array(
 			'server_name'	=> 'localhost',
 			'server_port'	=> 80,
 			'script_path'	=> '/',
