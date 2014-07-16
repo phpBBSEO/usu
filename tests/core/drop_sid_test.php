@@ -7,9 +7,9 @@
 *
 */
 
-namespace phpbbseo\usu\tests\sid;
+namespace phpbbseo\usu\tests\core;
 
-class drop_sid_test extends \phpbb_test_case
+class drop_sid_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 {
 	public function drop_sid_test_data()
 	{
@@ -81,9 +81,6 @@ class drop_sid_test extends \phpbb_test_case
 	*/
 	function test_drop_sid($case, $expected)
 	{
-		$phpbb_seo = new \phpbbseo\usu\core();
-		$phpbb_seo->init();
-
-		$this->assertEquals($expected, $phpbb_seo->drop_sid($case));
+		$this->assertEquals($expected, $this->phpbb_seo->drop_sid($case));
 	}
 }
