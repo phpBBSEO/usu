@@ -16,7 +16,7 @@ class format_url_test extends \phpbb_test_case
 	*/
 	private $phpbb_seo;
 
-	private function setUp()
+	public function setUp()
 	{
 		global $phpbb_root_path, $phpEx, $config, $request;
 
