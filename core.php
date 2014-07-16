@@ -806,7 +806,9 @@ class core
 
 		if (!empty(self::$rewrite_method[self::$path][self::$filename]))
 		{
-			rewriter::{self::$rewrite_method[self::$path][self::$filename]}();
+			$rewrite_method_name = self::$rewrite_method[self::$path][self::$filename];
+
+			rewriter::$rewrite_method_name();
 
 			return (self::$seo_cache[$url] = self::$path . self::$url . self::query_string(self::$get_vars, $amp_delim, '?')) . $anchor;
 		}
