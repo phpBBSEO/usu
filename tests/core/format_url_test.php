@@ -11,7 +11,7 @@ namespace phpbbseo\usu\tests\core;
 
 class format_url_test extends \phpbb_test_case
 {
-	public setup_test_case()
+	private function setup_test_case()
 	{
 		global $phpbb_root_path, $config, $request;
 
