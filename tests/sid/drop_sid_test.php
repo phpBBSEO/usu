@@ -82,6 +82,7 @@ class drop_sid_test extends \phpbb_test_case
 	function test_drop_sid($case, $expected)
 	{
 		$phpbb_seo = new \phpbbseo\usu\core();
+		$phpbb_seo->init();
 
 		$this->assertEquals($expected, $phpbb_seo->drop_sid($case));
 	}
