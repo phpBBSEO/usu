@@ -82,6 +82,7 @@ class pagination extends \phpbb\pagination
 		if (!isset($paginated[$base_url]))
 		{
 			$rewriten = core::url_rewrite($base_url);
+
 			@list($rewriten, $qs) = explode('?', $rewriten, 2);
 
 			if (

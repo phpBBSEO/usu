@@ -88,18 +88,18 @@ class listener implements EventSubscriberInterface
 	static public function getSubscribedEvents()
 	{
 		return array(
-			'core.common' => 'core_common',
-			'core.page_header_after' => 'core_page_header_after',
-			'core.page_footer' => 'core_page_footer',
-			'core.user_setup' => 'core_user_setup',
-			'core.viewforum_modify_topicrow' => 'core_viewforum_modify_topicrow',
-			'core.viewtopic_modify_page_title' => 'core_viewtopic_modify_page_title',
-			'core.viewtopic_modify_post_row' => 'core_viewtopic_modify_post_row',
-			'core.memberlist_view_profile' => 'core_memberlist_view_profile',
-			'core.modify_username_string' => 'core_modify_username_string',
-			'core.append_sid' => 'core_append_sid',
-			'core.submit_post_end' => 'core_submit_post_end',
-			'core.posting_modify_template_vars' => 'core_posting_modify_template_vars',
+			'core.common'						=> 'core_common',
+			'core.page_header_after'			=> 'core_page_header_after',
+			'core.page_footer'					=> 'core_page_footer',
+			'core.user_setup'					=> 'core_user_setup',
+			'core.viewforum_modify_topicrow'	=> 'core_viewforum_modify_topicrow',
+			'core.viewtopic_modify_page_title'	=> 'core_viewtopic_modify_page_title',
+			'core.viewtopic_modify_post_row'	=> 'core_viewtopic_modify_post_row',
+			'core.memberlist_view_profile'		=> 'core_memberlist_view_profile',
+			'core.modify_username_string'		=> 'core_modify_username_string',
+			'core.append_sid'					=> 'core_append_sid',
+			'core.submit_post_end'				=> 'core_submit_post_end',
+			'core.posting_modify_template_vars'	=> 'core_posting_modify_template_vars',
 		);
 	}
 
@@ -133,6 +133,7 @@ class listener implements EventSubscriberInterface
 					}
 
 					\phpbbseo\usu\core::$seo_path['canonical'] = \phpbbseo\usu\core::drop_sid(append_sid("{$this->phpbb_root_path}viewforum.$this->php_ext", "f=$this->forum_id&amp;start=$this->start"));
+
 					$default_sort_days = (!empty($user_data['user_topic_show_days'])) ? $user_data['user_topic_show_days'] : 0;
 					$default_sort_key = (!empty($user_data['user_topic_sortby_type'])) ? $user_data['user_topic_sortby_type'] : 't';
 					$default_sort_dir = (!empty($user_data['user_topic_sortby_dir'])) ? $user_data['user_topic_sortby_dir'] : 'd';
@@ -142,6 +143,7 @@ class listener implements EventSubscriberInterface
 					$sort_key = request_var('sk', $default_sort_key);
 					$sort_dir = request_var('sd', $default_sort_dir);
 					$keep_mark = in_array($mark_read, array('topics', 'topic', 'forums', 'all')) ? (boolean) ($user_data['is_registered'] || $config['load_anon_lastread']) : false;
+
 					\phpbbseo\usu\core::$seo_opt['zero_dupe']['redir_def'] = array(
 						'hash'		=> array('val' => request_var('hash', ''), 'keep' => $keep_mark),
 						'f'			=> array('val' => $this->forum_id, 'keep' => true, 'force' => true),
@@ -152,6 +154,7 @@ class listener implements EventSubscriberInterface
 						'mark_time'	=> array('val' => request_var('mark_time', 0), 'keep' => $keep_mark),
 						'start'		=> array('val' => $this->start, 'keep' => true),
 					);
+
 					\phpbbseo\usu\core::zero_dupe();
 				}
 				else
@@ -207,7 +210,9 @@ class listener implements EventSubscriberInterface
 						}
 
 						unset(\phpbbseo\usu\core::$seo_url['topic'][$topic_id]);
+
 						$topic_data['topic_url'] = \phpbbseo\usu\core::get_url_info('topic', \phpbbseo\usu\core::prepare_url( 'topic', $_title, $topic_id, $_parent, (( empty($_title) || ($_title == \phpbbseo\usu\core::$seo_static['topic']) ) ? true : false) ), 'url');
+
 						unset(\phpbbseo\usu\core::$seo_url['topic'][$topic_id]);
 
 						if ($topic_data['topic_url'])
@@ -225,6 +230,7 @@ class listener implements EventSubscriberInterface
 				}
 
 				\phpbbseo\usu\core::prepare_topic_url($topic_data, $this->forum_id);
+
 				$start = \phpbbseo\usu\core::seo_chk_start($this->start, $this->config['posts_per_page']);
 
 				if ($this->start != $start)
@@ -271,6 +277,7 @@ class listener implements EventSubscriberInterface
 						$keep_unwatch = (boolean) ($seo_unwatch == 'topic' && $user_data['is_registered']);
 						$keep_hash = (boolean) ($keep_watch || $keep_unwatch || $seo_bookmark);
 						$seo_uid = max(0, request_var('uid', 0));
+
 						\phpbbseo\usu\core::$seo_opt['zero_dupe']['redir_def'] = array(
 							'uid'		=> array('val' => $seo_uid, 'keep' => (boolean) ($keep_hash && $seo_uid)),
 							'f'			=> array('val' => $forum_id, 'keep' => true, 'force' => true),
@@ -473,9 +480,12 @@ class listener implements EventSubscriberInterface
 
 		$row = $event['row'];
 		$topic_row = $event['topic_row'];
+
 		\phpbbseo\usu\core::prepare_topic_url($row, $topic_forum_id);
+
 		$view_topic_url_params = 'f=' . $topic_forum_id . '&amp;t=' . $topic_id;
 		$view_topic_url = $topic_row['U_VIEW_TOPIC'] = \phpbbseo\usu\core::url_rewrite("{$this->phpbb_root_path}viewtopic.$this->php_ext", $view_topic_url_params, true, false, true);
+
 		$event['topic_row'] = $topic_row;
 		$event['row'] = $row;
 	}
@@ -507,6 +517,7 @@ class listener implements EventSubscriberInterface
 		}
 
 		$member = $event['member'];
+
 		\phpbbseo\usu\core::set_user_url( $member['username'], $member['user_id'] );
 		\phpbbseo\usu\core::$seo_path['canonical'] = \phpbbseo\usu\core::drop_sid(append_sid("{$this->phpbb_root_path}memberlist.$this->php_ext", "mode=viewprofile&amp;u=" . $member['user_id']));
 		\phpbbseo\usu\core::$seo_opt['zero_dupe']['redir_def'] = array(
@@ -514,6 +525,7 @@ class listener implements EventSubscriberInterface
 			'u'		=> array('val' => $member['user_id'], 'keep' => true, 'force' => true),
 		);
 		\phpbbseo\usu\core::zero_dupe();
+
 		$event['member'] = $member;
 	}
 
@@ -541,6 +553,7 @@ class listener implements EventSubscriberInterface
 
 		$username = $event['username'];
 		$custom_profile_url = $event['custom_profile_url'];
+
 		\phpbbseo\usu\core::set_user_url($username, $user_id);
 
 		if ($custom_profile_url !== false)
@@ -599,9 +612,11 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 	public function core_submit_post_end($event)
 	{
 		global $mode, $post_data; // god save hax
+
 		$data = $event['data'];
 		$post_id = $data['post_id'];
 		$forum_id = $data['forum_id'];
+
 		// for some reasons, $post_mode cannot be globallized without being nullized ...
 		if ($mode == 'post')
 		{
@@ -615,12 +630,15 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 		{
 			$post_mode = ($data['topic_posts_approved'] + $data['topic_posts_unapproved'] + $data['topic_posts_softdeleted'] == 1) ? 'edit_topic' : (($data['topic_first_post_id'] == $data['post_id']) ? 'edit_first_post' : (($data['topic_last_post_id'] == $data['post_id']) ? 'edit_last_post' : 'edit'));
 		}
+
 		if ($mode == 'post' || ($mode == 'edit' && $data['topic_first_post_id'] == $post_id))
 		{
 			\phpbbseo\usu\core::set_url($data['forum_name'], $forum_id, 'forum');
+
 			$_parent = $post_data['topic_type'] == POST_GLOBAL ? \phpbbseo\usu\core::$seo_static['global_announce'] : \phpbbseo\usu\core::$seo_url['forum'][$forum_id];
 			$_t = !empty($data['topic_id']) ? max(0, (int) $data['topic_id'] ) : 0;
 			$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc(request_var('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
+
 			if (!\phpbbseo\usu\core::check_url('topic', $_url, $_parent))
 			{
 				if (!empty($_url))
@@ -634,10 +652,14 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 				{
 					$_title = \phpbbseo\usu\core::$modrtype > 2 ? censor_text($post_data['post_subject']) : '';
 				}
+
 				unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
+
 				$_url = \phpbbseo\usu\core::get_url_info('topic', \phpbbseo\usu\core::prepare_url( 'topic', $_title, $_t, $_parent ,  (( empty($_title) || ($_title == \phpbbseo\usu\core::$seo_static['topic']) ) ? true : false)), 'url');
+
 				unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
 			}
+
 			$data['topic_url'] = $post_data['topic_url'] = $_url;
 		}
 
@@ -653,11 +675,14 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 						WHERE topic_id = ' . (int) $data['topic_id'];
 					$this->db->sql_query($sql);
 				}
+
 				break;
 		}
+
 		\phpbbseo\usu\core::set_url($data['forum_name'], $data['forum_id'], 'forum');
 
 		$params = $add_anchor = '';
+
 		if ($data['post_visibility'] == ITEM_APPROVED)
 		{
 			$params .= '&amp;t=' . $data['topic_id'];
@@ -672,11 +697,14 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 		{
 			$params .= '&amp;t=' . $data['topic_id'];
 		}
+
 		if ($params)
 		{
 			$data['topic_type'] = $post_data['topic_type'];
+
 			\phpbbseo\usu\core::prepare_topic_url($data);
 		}
+
 		$url = (!$params) ? "{$this->phpbb_root_path}viewforum.$this->php_ext" : "{$this->phpbb_root_path}viewtopic.$this->php_ext";
 		$url = \phpbbseo\usu\core::url_rewrite($url, 'f=' . $data['forum_id'] . $params, true, false, true) . $add_anchor;
 
@@ -694,14 +722,17 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 		$post_id = $event['post_id'];
 		$forum_id = $event['forum_id'];
 		$post_data = $event['post_data'];
+
 		if ($submit || $preview || $refresh)
 		{
 			if ($mode == 'post' || ($mode == 'edit' && $post_data['topic_first_post_id'] == $post_id))
 			{
 				\phpbbseo\usu\core::set_url($post_data['forum_name'], $forum_id, 'forum');
+
 				$_parent = $post_data['topic_type'] == POST_GLOBAL ? \phpbbseo\usu\core::$seo_static['global_announce'] : \phpbbseo\usu\core::$seo_url['forum'][$forum_id];
 				$_t = !empty($post_data['topic_id']) ? max(0, (int) $post_data['topic_id'] ) : 0;
 				$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc(request_var('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
+
 				if (!\phpbbseo\usu\core::check_url('topic', $_url, $_parent))
 				{
 					if (!empty($_url))
@@ -715,15 +746,20 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 					{
 						$_title = \phpbbseo\usu\core::$modrtype > 2 ? censor_text($post_data['post_subject']) : '';
 					}
+
 					unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
+
 					$_url = \phpbbseo\usu\core::get_url_info('topic', \phpbbseo\usu\core::prepare_url( 'topic', $_title, $_t, $_parent ,  (( empty($_title) || ($_title == \phpbbseo\usu\core::$seo_static['topic']) ) ? true : false)), 'url');
+
 					unset(\phpbbseo\usu\core::$seo_url['topic'][$_t]);
 				}
+
 				$post_data['topic_url'] = $_url;
 			}
 		}
 		$page_data['TOPIC_URL'] = isset($post_data['topic_url']) ? preg_replace('`' . \phpbbseo\usu\core::$seo_delim['topic'] . '$`i', '', $post_data['topic_url']) : '';
 		$page_data['S_URL'] = ($mode == 'post' || ($mode == 'edit' && $post_id == $post_data['topic_first_post_id'])) ? \phpbbseo\usu\core::url_can_edit($forum_id) : false;
+
 		$event['page_data'] = $page_data;
 	}
 }

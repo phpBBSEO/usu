@@ -31,6 +31,7 @@ class rewriter
 		if (!empty(core::$get_vars['p']))
 		{
 			core::$url = core::$seo_static['post'] . core::$get_vars['p'] . core::$seo_ext['post'];
+
 			unset(core::$get_vars['p'], core::$get_vars['f'], core::$get_vars['t'], core::$get_vars['start']);
 
 			return;
@@ -42,6 +43,7 @@ class rewriter
 			core::filter_get_var(core::$get_filter['topic']);
 			core::{core::$paginate_method['topic']}(core::$seo_ext['topic']);
 			core::$url = core::$seo_url['topic'][core::$get_vars['t']] . core::$start;
+
 			unset(core::$get_vars['t'], core::$get_vars['f'], core::$get_vars['p']);
 
 			return;
@@ -52,6 +54,7 @@ class rewriter
 			core::filter_get_var(core::$get_filter['topic']);
 			core::{core::$paginate_method['topic']}(core::$seo_ext['topic']);
 			core::$url = core::$seo_static['topic'] . core::$get_vars['t'] . core::$start;
+
 			unset(core::$get_vars['t'], core::$get_vars['f'], core::$get_vars['p']);
 
 			return;
@@ -110,6 +113,7 @@ class rewriter
 		if (@core::$get_vars['mode'] === 'viewprofile' && !@empty(core::$seo_url['user'][core::$get_vars['u']]))
 		{
 			core::$url = core::$seo_url['user'][core::$get_vars['u']] . core::$seo_ext['user'];
+
 			unset(core::$get_vars['mode'], core::$get_vars['u']);
 
 			return;
@@ -118,6 +122,7 @@ class rewriter
 		{
 			core::{core::$paginate_method['group']}(core::$seo_ext['group']);
 			core::$url =  core::$seo_url['group'][core::$get_vars['g']] . core::$start;
+
 			unset(core::$get_vars['mode'], core::$get_vars['g']);
 
 			return;
@@ -125,6 +130,7 @@ class rewriter
 		else if (@core::$get_vars['mode'] === 'leaders')
 		{
 			core::$url =  core::$seo_static['leaders'] . core::$seo_ext['leaders'];
+
 			unset(core::$get_vars['mode']);
 
 			return;
@@ -151,26 +157,31 @@ class rewriter
 		}
 
 		core::$path = core::$seo_path['phpbb_urlR'];
-		$user_id = !empty(core::$get_vars['author_id']) ? core::$get_vars['author_id'] : ( isset(core::$seo_url['username'][rawurldecode(@core::$get_vars['author'])]) ? core::$seo_url['username'][rawurldecode(@core::$get_vars['author'])] : 0);
+
+		$user_id = !empty(core::$get_vars['author_id']) ? core::$get_vars['author_id'] : (isset(core::$seo_url['username'][rawurldecode(@core::$get_vars['author'])]) ? core::$seo_url['username'][rawurldecode(@core::$get_vars['author'])] : 0);
 
 		if ($user_id && isset(core::$seo_url['user'][$user_id]))
 		{
+			$sr = (@core::$get_vars['sr'] == 'topics') ? 'topics' : 'posts';
+
 			// Filter default params
 			core::filter_get_var(core::$get_filter['search']);
 			core::{core::$paginate_method['user']}(core::$seo_ext['user']);
-			$sr = (@core::$get_vars['sr'] == 'topics' ) ? 'topics' : 'posts';
 			core::$url = core::$seo_url['user'][$user_id] . core::$seo_delim['sr'] . $sr . core::$start;
+
 			unset(core::$get_vars['author_id'], core::$get_vars['author'], core::$get_vars['sr']);
 
 			return;
 		}
 		else if (core::$seo_opt['profile_noids'] && !empty(core::$get_vars['author']))
 		{
+			$sr = (@core::$get_vars['sr'] == 'topics') ? '/topics' : '/posts';
+
 			// Filter default params
 			core::filter_get_var(core::$get_filter['search']);
 			core::rewrite_pagination_page();
-			$sr = (@core::$get_vars['sr'] == 'topics' ) ? '/topics' : '/posts';
 			core::$url = core::$seo_static['user'] . '/' . core::seo_url_encode(core::$get_vars['author']) . $sr . core::$start;
+
 			unset(core::$get_vars['author'], core::$get_vars['author_id'], core::$get_vars['sr']);
 
 			return;
@@ -183,6 +194,7 @@ class rewriter
 					core::filter_get_var(core::$get_filter['search']);
 					core::{core::$paginate_method['atopic']}(core::$seo_ext['atopic']);
 					core::$url = core::$seo_static['atopic'] . core::$start;
+
 					unset(core::$get_vars['search_id'], core::$get_vars['sr']);
 
 					if (@core::$get_vars['st'] == 7)
@@ -195,6 +207,7 @@ class rewriter
 					core::filter_get_var(core::$get_filter['search']);
 					core::{core::$paginate_method['utopic']}(core::$seo_ext['utopic']);
 					core::$url = core::$seo_static['utopic'] . core::$start;
+
 					unset(core::$get_vars['search_id']);
 
 					if (@core::$get_vars['sr'] == 'topics')
@@ -208,6 +221,7 @@ class rewriter
 
 					core::set_user_url($user->data['username'], $user->data['user_id']);
 					core::$url = core::$seo_url['user'][$user->data['user_id']] . core::$seo_delim['sr'] . 'topics' . core::$seo_ext['user'];
+
 					unset(core::$get_vars['search_id']);
 
 					return;
@@ -215,6 +229,7 @@ class rewriter
 					core::filter_get_var(core::$get_filter['search']);
 					core::{core::$paginate_method['npost']}(core::$seo_ext['npost']);
 					core::$url = core::$seo_static['npost'] . core::$start;
+
 					unset(core::$get_vars['search_id']);
 
 					if (@core::$get_vars['sr'] == 'topics')
@@ -227,6 +242,7 @@ class rewriter
 					core::filter_get_var(core::$get_filter['search']);
 					core::{core::$paginate_method['urpost']}(core::$seo_ext['urpost']);
 					core::$url = core::$seo_static['urpost'] . core::$start;
+
 					unset(core::$get_vars['search_id']);
 
 					if (@core::$get_vars['sr'] == 'topics')
@@ -267,6 +283,7 @@ class rewriter
 			*/
 
 			core::$url .= core::$seo_delim['file'] . core::$get_vars['id'];
+
 			unset(core::$get_vars['id'], core::$get_vars['t'], core::$get_vars['mode']);
 
 			return;

@@ -32,7 +32,7 @@ class customise
 
 		// ===> Custom url replacements <===
 		// Here you can set up custom replacements to be used in title injection.
-		// Example : array( 'find' => 'replace')
+		// Example : array('find' => 'replace')
 		//	core::$url_replace = array(
 		//		// Purely cosmetic replace
 		//		'$' => 'dollar', '€' => 'euro',
