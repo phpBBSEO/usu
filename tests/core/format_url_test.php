@@ -9,31 +9,8 @@
 
 namespace phpbbseo\usu\tests\core;
 
-class format_url_test extends \phpbb_test_case
+class format_url_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 {
-	/**
-	* \phpbbseo\usu\core
-	*/
-	private $phpbb_seo;
-
-	public function setUp()
-	{
-		global $phpbb_root_path, $phpEx, $config, $request;
-
-		require_once $phpbb_root_path . 'includes/utf/utf_tools.' . $phpEx;
-
-		$config = new \phpbb\config\config(array(
-			'server_name'	=> 'localhost',
-			'server_port'	=> 80,
-			'script_path'	=> '/',
-		));
-
-		$request = new \phpbbseo\usu\tests\mock\request();
-
-		$this->phpbb_seo = new \phpbbseo\usu\core();
-		$this->phpbb_seo->init();
-	}
-
 	public function format_url_test_data()
 	{
 		return array(
@@ -62,6 +39,6 @@ class format_url_test extends \phpbb_test_case
 	*/
 	function test_format_url($case, $expected, $type = 'topic')
 	{
-		$this->assertEquals($expected, $this->phpbb_seo->format_url($case), $type);
+		$this->assertEquals($expected, $this->phpbb_seo->format_url($case, $type));
 	}
 }
