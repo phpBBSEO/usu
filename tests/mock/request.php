@@ -13,7 +13,7 @@ namespace phpbbseo\usu\tests\mock;
 * Request Mock
 * @package phpBB3
 */
-class request extends \phpbb\request\request_interface
+class request extends \phpbb\request\request
 {
 	public function __construct()
 	{
