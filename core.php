@@ -994,7 +994,7 @@ class core
 		{
 			global $request;
 
-			$forum_uri = request_var('forum_uri', '');
+			$forum_uri = $request->variable('forum_uri', '');
 
 			if (!empty($request))
 			{
@@ -1199,7 +1199,7 @@ class core
 	*/
 	public static function zero_dupe($url = '', $uri = '', $path = '')
 	{
-		global $auth, $user, $_SID, $phpbb_root_path, $config;
+		global $auth, $user, $_SID, $phpbb_root_path, $config, $request;
 
 		if (!self::$seo_opt['zero_dupe']['on'] || empty(self::$seo_opt['req_file']) || (!self::$seo_opt['rewrite_usermsg'] && self::$seo_opt['req_file'] == 'search'))
 		{
@@ -1208,7 +1208,7 @@ class core
 
 		if (isset($_REQUEST['explain']) && (boolean) ($auth->acl_get('a_') && defined('DEBUG_CONTAINER')))
 		{
-			if (request_var('explain', 0) == 1)
+			if ($request->variable('explain', 0) == 1)
 			{
 				return true;
 			}
@@ -1223,7 +1223,7 @@ class core
 		// Only add sid if user is registered and needs it to keep session
 		if (isset($_GET['sid']) && !empty($_SID) && ($reg || !self::$seo_opt['rem_sid']))
 		{
-			if (request_var('sid', '') == $user->session_id)
+			if ($request->variable('sid', '') == $user->session_id)
 			{
 				$url .=  (utf8_strpos( $url, '?' ) !== false ? '&' : '?') . 'sid=' . $user->session_id;
 			}

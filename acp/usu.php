@@ -31,11 +31,11 @@ class usu
 
 	function main($id, $mode)
 	{
-		global $config, $db, $user, $auth, $template, $cache;
+		global $config, $db, $user, $auth, $template, $cache, $request;
 		global $phpbb_root_path, $phpbb_admin_path, $phpEx, $table_prefix;
 
 		$user->add_lang_ext('phpbbseo/usu', 'acp_usu');
-		$action	= request_var('action', '');
+		$action	= $request->variable('action', '');
 		$submit = isset($_POST['submit']);
 		$form_key = 'acp_board';
 		add_form_key($form_key);
@@ -235,7 +235,7 @@ class usu
 				$display_vars['vars']['save'] = array('lang' => 'SEO_HTACCESS_SAVE', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true,);
 				$display_vars['vars']['more_options'] = array('lang' => 'SEO_MORE_OPTION', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true,);
 				$this->new_config['save'] = false;
-				$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc(request_var('config', array('' => ''), true)) : $this->new_config;
+				$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc($request->variable('config', array('' => ''), true)) : $this->new_config;
 				$this->new_config['more_options'] = isset($cfg_array['more_options']) ? $cfg_array['more_options'] : false;
 				$this->new_config['slash'] = isset($cfg_array['slash']) ? $cfg_array['slash'] : false;
 				$this->new_config['wslash'] = isset($cfg_array['wslash']) ? $cfg_array['wslash'] : false;
@@ -340,7 +340,7 @@ class usu
 
 		$error = array();
 		$seo_msg = array();
-		$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc(request_var('config', array('' => ''), true)) : $this->new_config;
+		$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc($request->variable('config', array('' => ''), true)) : $this->new_config;
 
 		if ($submit && !check_form_key($form_key)) {
 			$error[] = $user->lang['FORM_INVALID'];
@@ -369,7 +369,7 @@ class usu
 			{
 				if (isset($_POST['multiple_' . $config_name]))
 				{
-					$m_values = utf8_normalize_nfc(request_var('multiple_' . $config_name, array('' => '')));
+					$m_values = utf8_normalize_nfc($request->variable('multiple_' . $config_name, array('' => '')));
 					$validate_int = !empty($cfg_setup['multiple_validate']) && $cfg_setup['multiple_validate'] == 'int' ? true : false;
 
 					foreach($m_values as $k => $v)
