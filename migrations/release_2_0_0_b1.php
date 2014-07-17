@@ -82,7 +82,7 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 						'module_basename'	=> '\phpbbseo\usu\acp\usu',
 						'module_langname'	=> 'ACP_PHPBB_SEO_CLASS',
 						'module_mode'		=> 'settings',
-						'module_auth'		=> 'acl_a_board',
+						'module_auth'		=> 'ext_phpbbseo/usu && acl_a_board',
 					),
 				)
 			),
@@ -95,7 +95,7 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 						'module_basename'	=> '\phpbbseo\usu\acp\usu',
 						'module_langname'	=> 'ACP_FORUM_URL',
 						'module_mode'		=> 'forum_url',
-						'module_auth'		=> 'acl_a_board',
+						'module_auth'		=> 'ext_phpbbseo/usu && acl_a_board',
 					),
 				),
 			),
@@ -108,7 +108,7 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 						'module_basename'	=> '\phpbbseo\usu\acp\usu',
 						'module_langname'	=> 'ACP_HTACCESS',
 						'module_mode'		=> 'htaccess',
-						'module_auth'		=> 'acl_a_board',
+						'module_auth'		=> 'ext_phpbbseo/usu && acl_a_board',
 					),
 				)
 			),
@@ -121,7 +121,7 @@ class release_2_0_0_b1 extends \phpbb\db\migration\migration
 						'module_basename'	=> '\phpbbseo\usu\acp\usu',
 						'module_langname'	=> 'ACP_SEO_EXTENDED',
 						'module_mode'		=> 'extended',
-						'module_auth'		=> 'acl_a_board',
+						'module_auth'		=> 'ext_phpbbseo/usu && acl_a_board',
 					),
 				)
 			),
