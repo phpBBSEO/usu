@@ -683,7 +683,7 @@ class core
 		static $find = array('&', '/', '#', '+');
 		static $replace = array('%26', '%2F', '%23', '%2b');
 
-		return rawurlencode(str_replace($find, $replace, utf8_normalize_nfc(htmlspecialchars_decode(str_replace('&amp;amp;', '%26', rawurldecode($url))))));
+		return rawurlencode(str_replace($find, $replace, \utf8_normalize_nfc(htmlspecialchars_decode(str_replace('&amp;amp;', '%26', rawurldecode($url))))));
 	}
 
 	/**
@@ -806,7 +806,9 @@ class core
 
 		if (!empty(self::$rewrite_method[self::$path][self::$filename]))
 		{
-			rewriter::{self::$rewrite_method[self::$path][self::$filename]}();
+			$rewrite_method_name = self::$rewrite_method[self::$path][self::$filename];
+
+			rewriter::$rewrite_method_name();
 
 			return (self::$seo_cache[$url] = self::$path . self::$url . self::query_string(self::$get_vars, $amp_delim, '?')) . $anchor;
 		}
@@ -996,7 +998,7 @@ class core
 		// workaround for FF default iso encoding
 		if (!self::is_utf8(self::$seo_path['uri']))
 		{
-			self::$seo_path['uri'] = utf8_normalize_nfc(utf8_recode(self::$seo_path['uri'], 'iso-8859-1'));
+			self::$seo_path['uri'] = \utf8_normalize_nfc(\utf8_recode(self::$seo_path['uri'], 'iso-8859-1'));
 		}
 
 		self::$seo_path['uri'] = self::$seo_path['root_url'] . self::$seo_path['uri'];
@@ -1294,7 +1296,7 @@ class core
 		{
 			if (request_var('sid', '') == $user->session_id)
 			{
-				$url .=  (utf8_strpos($url, '?') !== false ? '&' : '?') . 'sid=' . $user->session_id;
+				$url .=  (\utf8_strpos($url, '?') !== false ? '&' : '?') . 'sid=' . $user->session_id;
 			}
 		}
 
@@ -1321,7 +1323,7 @@ class core
 			}
 			else
 			{
-				return self::$seo_opt['zero_dupe']['go_redir'] && ((utf8_strpos($uri, $url_check) === false) ? self::seo_redirect($url) : false);
+				return self::$seo_opt['zero_dupe']['go_redir'] && ((\utf8_strpos($uri, $url_check) === false) ? self::seo_redirect($url) : false);
 			}
 		}
 	}

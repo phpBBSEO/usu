@@ -39,9 +39,11 @@ class rewriter
 
 		if (isset(core::$get_vars['t']) && !empty(core::$seo_url['topic'][core::$get_vars['t']]))
 		{
+			$paginate_method_name = core::$paginate_method['topic'];
+
 			// Filter default params
 			core::filter_get_var(core::$get_filter['topic']);
-			core::{core::$paginate_method['topic']}(core::$seo_ext['topic']);
+			core::$paginate_method_name(core::$seo_ext['topic']);
 			core::$url = core::$seo_url['topic'][core::$get_vars['t']] . core::$start;
 
 			unset(core::$get_vars['t'], core::$get_vars['f'], core::$get_vars['p']);
@@ -50,9 +52,11 @@ class rewriter
 		}
 		else if (!empty(core::$get_vars['t']))
 		{
+			$paginate_method_name = core::$paginate_method['topic'];
+
 			// Filter default params
 			core::filter_get_var(core::$get_filter['topic']);
-			core::{core::$paginate_method['topic']}(core::$seo_ext['topic']);
+			core::$paginate_method_name(core::$seo_ext['topic']);
 			core::$url = core::$seo_static['topic'] . core::$get_vars['t'] . core::$start;
 
 			unset(core::$get_vars['t'], core::$get_vars['f'], core::$get_vars['p']);
@@ -77,9 +81,11 @@ class rewriter
 
 		if (!empty(core::$get_vars['f']))
 		{
+			$paginate_method_name = core::$paginate_method['forum'];
+
 			// Filter default params
 			core::filter_get_var(core::$get_filter['forum']);
-			core::{core::$paginate_method['forum']}(core::$seo_ext['forum']);
+			core::$paginate_method_name(core::$seo_ext['forum']);
 
 			if (empty(core::$seo_url['forum'][core::$get_vars['f']]))
 			{
@@ -120,7 +126,9 @@ class rewriter
 		}
 		else if (@core::$get_vars['mode'] === 'group' && !@empty(core::$seo_url['group'][core::$get_vars['g']]))
 		{
-			core::{core::$paginate_method['group']}(core::$seo_ext['group']);
+			$paginate_method_name = core::$paginate_method['group'];
+
+			core::$paginate_method_name(core::$seo_ext['group']);
 			core::$url =  core::$seo_url['group'][core::$get_vars['g']] . core::$start;
 
 			unset(core::$get_vars['mode'], core::$get_vars['g']);
@@ -162,11 +170,13 @@ class rewriter
 
 		if ($user_id && isset(core::$seo_url['user'][$user_id]))
 		{
-			$sr = (@core::$get_vars['sr'] == 'topics') ? 'topics' : 'posts';
+			$sr = (@core::$get_vars['sr'] == 'topics' ) ? 'topics' : 'posts';
+
+			$paginate_method_name = core::$paginate_method['user'];
 
 			// Filter default params
 			core::filter_get_var(core::$get_filter['search']);
-			core::{core::$paginate_method['user']}(core::$seo_ext['user']);
+			core::$paginate_method_name(core::$seo_ext['user']);
 			core::$url = core::$seo_url['user'][$user_id] . core::$seo_delim['sr'] . $sr . core::$start;
 
 			unset(core::$get_vars['author_id'], core::$get_vars['author'], core::$get_vars['sr']);
@@ -191,8 +201,10 @@ class rewriter
 			switch (core::$get_vars['search_id'])
 			{
 				case 'active_topics':
+					$paginate_method_name = core::$paginate_method['atopic'];
+
 					core::filter_get_var(core::$get_filter['search']);
-					core::{core::$paginate_method['atopic']}(core::$seo_ext['atopic']);
+					core::$paginate_method_name(core::$seo_ext['atopic']);
 					core::$url = core::$seo_static['atopic'] . core::$start;
 
 					unset(core::$get_vars['search_id'], core::$get_vars['sr']);
@@ -204,8 +216,10 @@ class rewriter
 
 					return;
 				case 'unanswered':
+					$paginate_method_name = core::$paginate_method['utopic'];
+
 					core::filter_get_var(core::$get_filter['search']);
-					core::{core::$paginate_method['utopic']}(core::$seo_ext['utopic']);
+					core::$paginate_method_name(core::$seo_ext['utopic']);
 					core::$url = core::$seo_static['utopic'] . core::$start;
 
 					unset(core::$get_vars['search_id']);
@@ -226,8 +240,10 @@ class rewriter
 
 					return;
 				case 'newposts':
+					$paginate_method_name = core::$paginate_method['npost'];
+
 					core::filter_get_var(core::$get_filter['search']);
-					core::{core::$paginate_method['npost']}(core::$seo_ext['npost']);
+					core::$paginate_method_name(core::$seo_ext['npost']);
 					core::$url = core::$seo_static['npost'] . core::$start;
 
 					unset(core::$get_vars['search_id']);
@@ -239,8 +255,10 @@ class rewriter
 
 					return;
 				case 'unreadposts':
+					$paginate_method_name = core::$paginate_method['urpost'];
+
 					core::filter_get_var(core::$get_filter['search']);
-					core::{core::$paginate_method['urpost']}(core::$seo_ext['urpost']);
+					core::$paginate_method_name(core::$seo_ext['urpost']);
 					core::$url = core::$seo_static['urpost'] . core::$start;
 
 					unset(core::$get_vars['search_id']);
