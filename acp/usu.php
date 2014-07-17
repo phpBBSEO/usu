@@ -31,13 +31,11 @@ class usu
 
 	function main($id, $mode)
 	{
-		global $config, $db, $user, $auth, $template, $cache;
+		global $config, $db, $user, $auth, $template, $cache, $request;
 		global $phpbb_root_path, $phpbb_admin_path, $phpEx, $table_prefix;
 
 		$user->add_lang_ext('phpbbseo/usu', 'acp_usu');
-
-		$action	= request_var('action', '');
-
+		$action	= $request->variable('action', '');
 		$submit = isset($_POST['submit']);
 		$form_key = 'acp_board';
 		add_form_key($form_key);
@@ -65,7 +63,7 @@ class usu
 
 		if (@isset(\phpbbseo\usu\core::$seo_opt['modrtype']))
 		{
-			$this->multiple_options['modrtype_values'] = array(1 => 1, 2 => 2, 3 => 3); // do not change;
+			$this->multiple_options['modrtype_values'] = array( 1 => 1, 2 => 2, 3 => 3 ); // do not change;
 		}
 
 		// <-- Mod rewrite selector
@@ -164,16 +162,13 @@ class usu
 				$user->lang['ACP_FORUM_URL_EXPLAIN'] .= '</p><hr/><p><b>' . $user->lang['ACP_PHPBB_SEO_VERSION'] . ' : ' . $this->modrtype_lang['link'] . ' - ( ' . $this->modrtype_lang['forumlink'] . ' )</b></p><hr/><p>';
 				$display_vars['vars'] = array();
 				$display_vars['vars']['legend1'] = 'ACP_FORUM_URL';
-
 				$sql = "SELECT forum_id, forum_name
 					FROM " . FORUMS_TABLE . "
 					ORDER BY left_id ASC";
 				$result = $db->sql_query($sql);
-
 				$forum_url_title = $error_cust = '';
 
-				while($row = $db->sql_fetchrow($result))
-				{
+				while( $row = $db->sql_fetchrow($result) ) {
 					$this->forum_ids[$row['forum_id']] = $row['forum_name'];
 				}
 
@@ -240,7 +235,7 @@ class usu
 				$display_vars['vars']['save'] = array('lang' => 'SEO_HTACCESS_SAVE', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true,);
 				$display_vars['vars']['more_options'] = array('lang' => 'SEO_MORE_OPTION', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true,);
 				$this->new_config['save'] = false;
-				$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc(request_var('config', array('' => ''), true)) : $this->new_config;
+				$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc($request->variable('config', array('' => ''), true)) : $this->new_config;
 				$this->new_config['more_options'] = isset($cfg_array['more_options']) ? $cfg_array['more_options'] : false;
 				$this->new_config['slash'] = isset($cfg_array['slash']) ? $cfg_array['slash'] : false;
 				$this->new_config['wslash'] = isset($cfg_array['wslash']) ? $cfg_array['wslash'] : false;
@@ -279,7 +274,6 @@ class usu
 				if (!empty($config['seo_related_on']))
 				{
 					$related_installed = true;
-
 					$user->add_lang_ext('phpbbseo/usu', 'acp_usu_install');
 
 					$display_vars['vars'] += array(
@@ -346,7 +340,7 @@ class usu
 
 		$error = array();
 		$seo_msg = array();
-		$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc(request_var('config', array('' => ''), true)) : $this->new_config;
+		$cfg_array = (isset($_REQUEST['config'])) ? utf8_normalize_nfc($request->variable('config', array('' => ''), true)) : $this->new_config;
 
 		if ($submit && !check_form_key($form_key)) {
 			$error[] = $user->lang['FORM_INVALID'];
@@ -375,7 +369,7 @@ class usu
 			{
 				if (isset($_POST['multiple_' . $config_name]))
 				{
-					$m_values = utf8_normalize_nfc(request_var('multiple_' . $config_name, array('' => '')));
+					$m_values = utf8_normalize_nfc($request->variable('multiple_' . $config_name, array('' => '')));
 					$validate_int = !empty($cfg_setup['multiple_validate']) && $cfg_setup['multiple_validate'] == 'int' ? true : false;
 
 					foreach($m_values as $k => $v)
@@ -608,27 +602,23 @@ class usu
 				if ($this->new_config['save'])
 				{
 					$this->write_cache($this->write_type);
-
 					add_log('admin', 'SEO_LOG_CONFIG_' . strtoupper($mode));
 				}
 			}
 			else if ($mode == 'extended')
 			{
 				add_log('admin', 'SEO_LOG_CONFIG_' . strtoupper($mode));
-
 				trigger_error($user->lang['CONFIG_UPDATED'] . adm_back_link($this->u_action));
 			}
 			else
 			{
 				if ($this->write_cache($this->write_type))
 				{
-					global $msg_long_text;
-
 					ksort(\phpbbseo\usu\core::$cache_config[$this->write_type]);
-
 					add_log('admin', 'SEO_LOG_CONFIG_' . strtoupper($mode));
+					$msg = !empty($seo_msg) ? '<br /><h1 style="color:red;text-align:left;">' . $user->lang['SEO_VALIDATE_INFO'] . '</h1><ul style="text-align:left;">' . implode(' ',$seo_msg) . '</ul><br />' : '';
 
-					$msg = !empty($seo_msg) ? '<br /><h1 style="color:red;text-align:left;">' . $user->lang['SEO_VALIDATE_INFO'] . '</h1><ul style="text-align:left;">' . implode(' ', $seo_msg) . '</ul><br />' : '';
+					global $msg_long_text;
 
 					$msg_long_text = $user->lang['SEO_CACHE_MSG_OK'] . $msg . adm_back_link($this->u_action);
 
@@ -648,9 +638,7 @@ class usu
 
 		$this->tpl_name = 'acp_board';
 		$this->page_title = $display_vars['title'];
-
 		\phpbbseo\usu\core::seo_end();
-
 		$l_title_explain = $user->lang[$display_vars['title'] . '_EXPLAIN'];
 
 		if ($mode != 'extended')
@@ -665,8 +653,8 @@ class usu
 			'S_ERROR'			=> (sizeof($error)) ? true : false,
 			'ERROR_MSG'			=> implode('<br />', $error),
 
-			'U_ACTION'			=> $this->u_action,
-		));
+			'U_ACTION'			=> $this->u_action)
+		);
 
 		// Output relevant page
 		foreach ($display_vars['vars'] as $config_key => $vars)
@@ -680,8 +668,8 @@ class usu
 			{
 				$template->assign_block_vars('options', array(
 					'S_LEGEND'		=> true,
-					'LEGEND'		=> (isset($user->lang[$vars])) ? $user->lang[$vars] : $vars
-				));
+					'LEGEND'		=> (isset($user->lang[$vars])) ? $user->lang[$vars] : $vars)
+				);
 
 				continue;
 			}
@@ -708,7 +696,8 @@ class usu
 				'S_EXPLAIN'		=> $vars['explain'],
 				'TITLE_EXPLAIN'	=> $l_explain,
 				'CONTENT'		=> build_cfg_template($type, $config_key, $this->new_config, $config_key, $vars),
-			));
+				)
+			);
 
 			unset($display_vars['vars'][$config_key]);
 		}
@@ -886,11 +875,10 @@ class usu
 				$html_path = trim(str_replace(trim($phpbb_path, '/'), '', $html_path), '/');
 			}
 
-			$colors = array(
-				'color'		=> '<b style="color:%1$s">%2$s</b>',
-				'static'	=> '#A020F0',
-				'ext'		=> '#6A5ACD',
-				'delim'		=> '#FF00FF',
+			$colors = array( 'color' => '<b style="color:%1$s">%2$s</b>',
+				'static' => '#A020F0',
+				'ext' => '#6A5ACD',
+				'delim' => '#FF00FF',
 			);
 
 			$tpl = array('paginpage' => '/?(<b style="color:' . $colors['static'] . '">%1$s</b>([0-9]+)<b style="color:' . $colors['ext'] . '">%2$s</b>)?',
@@ -900,14 +888,7 @@ class usu
 				'delim' => sprintf($colors['color'] , $colors['delim'], '%1$s'),
 			);
 
-			$modrtype = array(
-				1		=> 'SIMPLE',
-				2		=> 'MIXED',
-				1		=> 'SIMPLE',
-				3		=> 'ADVANCED',
-				'type'	=> intval(\phpbbseo\usu\core::$modrtype)
-			);
-
+			$modrtype = array( 1 => 'SIMPLE', 2 => 'MIXED', 1 => 'SIMPLE', 3 => 'ADVANCED', 'type' => intval(\phpbbseo\usu\core::$modrtype));
 			//
 			$htaccess_tpl = '<b style="color:blue"># Lines That should already be in your .htacess</b>' . "\n";
 			$htaccess_tpl .= '<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.{PHP_EX}"</b><b style="color:brown">&gt;</b>' . "\n";
@@ -1112,7 +1093,7 @@ class usu
 				'pagination'	=> trim(\phpbbseo\usu\core::$seo_ext['pagination'], '/') ? str_replace('.', '\\.', \phpbbseo\usu\core::$seo_ext['pagination']) : '/'
 			);
 
-			$reg_ex_page = sprintf($tpl['paginpage'], \phpbbseo\usu\core::$seo_static['pagination'], $seo_ext['pagination'] . ($seo_ext['pagination'] === '/' ? '?' : ''));
+			$reg_ex_page = sprintf($tpl['paginpage'], \phpbbseo\usu\core::$seo_static['pagination'], $seo_ext['pagination'] . ($seo_ext['pagination'] === '/' ? '?' : '') );
 
 			foreach (\phpbbseo\usu\core::$seo_ext as $type => $value)
 			{
@@ -1180,7 +1161,7 @@ class usu
 			$htaccess_output .= '<div class="content"><hr/>' . "\n" . '<b style="color:red">&rArr;&nbsp;' . $msg_loc . '</b><br/><br/><hr/>' . "\n";
 			$htaccess_output .= '<b>.htaccess :&nbsp;<a id="htaccess_toggle">' . $user->lang['SEO_SHOW'] . '&nbsp;/&nbsp;' . $user->lang['SEO_HIDE'] . '</a></b>' . "\n";
 			$htaccess_output .= '<div id="htaccess_code"><dl style="padding:5px;background-color:#FFFFFF;border:1px solid #d8d8d8;font-size:12px;"><dt style="border-bottom:1px solid #CCCCCC;margin-bottom:3px;font-weight:bold;display:block;">&nbsp;<a id="htaccess_select">' . $user->lang['SEO_SELECT_ALL'] . '</a></dt>' . "\n";
-			$htaccess_output .= '<dd ><code style="padding-top:5px;line-height:1.3em;color:#8b8b8b;font-weight:bold;font-family: monospace;white-space: pre;" id="htaccess_code_select"><br/><br/>' . str_replace("\n", '<br/>', $htaccess_code) . '</code></dd>' . "\n";
+			$htaccess_output .= '<dd ><code style="padding-top:5px;line-height:1.3em;color:#8b8b8b;font-weight:bold;font-family: monospace;white-space: pre;" id="htaccess_code_select"><br/><br/>' . str_replace( "\n", '<br/>', $htaccess_code) . '</code></dd>' . "\n";
 			$htaccess_output .= '</dl>' . "\n";
 			$htaccess_output .= '<div style="padding:5px;margin-top:10px;background-color:#FFFFFF;border:1px solid #d8d8d8;font-size:12px;"><b>' . $user->lang['SEO_HTACCESS_CAPTION'] . ':</b><ul style="margin-left:30px;margin-top:10px;font-weight:bold;font-size:12px;">' . "\n";
 			$htaccess_output .= '<li style="color:blue">&nbsp;' . $user->lang['SEO_HTACCESS_CAPTION_COMMENT'] . '</li>' . "\n";
@@ -1268,23 +1249,17 @@ class usu
 			\phpbbseo\usu\core::$modrtype = 1;
 		}
 
-		$modrtype_lang['titles'] = array(
-			1	=> $user->lang['ACP_SEO_SIMPLE'],
-			2	=>  $user->lang['ACP_SEO_MIXED'],
-			3	=>  $user->lang['ACP_SEO_ADVANCED'],
-			'u'	=> $user->lang['ACP_ULTIMATE_SEO_URL']
-		);
-
+		$modrtype_lang['titles'] = array( 1 => $user->lang['ACP_SEO_SIMPLE'], 2 =>  $user->lang['ACP_SEO_MIXED'], 3 =>  $user->lang['ACP_SEO_ADVANCED'], 'u' => $user->lang['ACP_ULTIMATE_SEO_URL']);
 		$modrtype_lang['title'] = $modrtype_lang['titles'][\phpbbseo\usu\core::$modrtype];
 		$modrtype_lang['utitle'] = $modrtype_lang['titles']['u'];
-		$modrtype_lang['types'] = array(1 => 'SIMPLE', 2 => 'MIXED', 1 => 'SIMPLE', 3 => 'ADVANCED');
+		$modrtype_lang['types'] = array( 1 => 'SIMPLE', 2 => 'MIXED', 1 => 'SIMPLE', 3 => 'ADVANCED');
 		$modrtype_lang['type'] = $modrtype_lang['types'][\phpbbseo\usu\core::$modrtype];
-		$modrtype_lang['modrlinks_en'] = array(1 =>  'http://www.phpbb-seo.com/en/simple-seo-url/simple-phpbb-seo-url-t1566.html', 2 =>  'http://www.phpbb-seo.com/en/mixed-seo-url/mixed-phpbb-seo-url-t1565.html', 3 =>  'http://www.phpbb-seo.com/en/advanced-seo-url/advanced-phpbb-seo-url-t1219.html', 'u' => 'http://www.phpbb-seo.com/en/phpbb-mod-rewrite/ultimate-seo-url-t4608.html');
-		$modrtype_lang['modrlinks_fr'] = array(1 =>  'http://www.phpbb-seo.com/fr/reecriture-url-simple/seo-url-phpbb-simple-t1945.html', 2 =>  'http://www.phpbb-seo.com/fr/reecriture-url-intermediaire/seo-url-intermediaire-t1946.html', 3 =>  'http://www.phpbb-seo.com/fr/reecriture-url-avancee/seo-url-phpbb-avance-t1501.html', 'u' => 'http://www.phpbb-seo.com/fr/mod-rewrite-phpbb/ultimate-seo-url-t4489.html');
-		$modrtype_lang['modrforumlinks_en'] = array(1 =>  'http://www.phpbb-seo.com/en/simple-seo-url/', 2 =>  'http://www.phpbb-seo.com/en/mixed-seo-url/', 3 =>  'http://www.phpbb-seo.com/en/advanced-seo-url/', 'u' => 'http://www.phpbb-seo.com/en/phpbb-mod-rewrite/');
-		$modrtype_lang['modrforumlinks_fr'] = array(1 =>  'http://www.phpbb-seo.com/fr/reecriture-url-simple/', 2 =>  'http://www.phpbb-seo.com/fr/reecriture-url-intermediaire/', 3 =>  'http://www.phpbb-seo.com/fr/reecriture-url-avancee/', 'u' => 'http://www.phpbb-seo.com/fr/mod-rewrite-phpbb/');
+		$modrtype_lang['modrlinks_en'] = array( 1 =>  'http://www.phpbb-seo.com/en/simple-seo-url/simple-phpbb-seo-url-t1566.html', 2 =>  'http://www.phpbb-seo.com/en/mixed-seo-url/mixed-phpbb-seo-url-t1565.html', 3 =>  'http://www.phpbb-seo.com/en/advanced-seo-url/advanced-phpbb-seo-url-t1219.html', 'u' => 'http://www.phpbb-seo.com/en/phpbb-mod-rewrite/ultimate-seo-url-t4608.html' );
+		$modrtype_lang['modrlinks_fr'] = array( 1 =>  'http://www.phpbb-seo.com/fr/reecriture-url-simple/seo-url-phpbb-simple-t1945.html', 2 =>  'http://www.phpbb-seo.com/fr/reecriture-url-intermediaire/seo-url-intermediaire-t1946.html', 3 =>  'http://www.phpbb-seo.com/fr/reecriture-url-avancee/seo-url-phpbb-avance-t1501.html', 'u' => 'http://www.phpbb-seo.com/fr/mod-rewrite-phpbb/ultimate-seo-url-t4489.html' );
+		$modrtype_lang['modrforumlinks_en'] = array( 1 =>  'http://www.phpbb-seo.com/en/simple-seo-url/', 2 =>  'http://www.phpbb-seo.com/en/mixed-seo-url/', 3 =>  'http://www.phpbb-seo.com/en/advanced-seo-url/', 'u' => 'http://www.phpbb-seo.com/en/phpbb-mod-rewrite/' );
+		$modrtype_lang['modrforumlinks_fr'] = array( 1 =>  'http://www.phpbb-seo.com/fr/reecriture-url-simple/', 2 =>  'http://www.phpbb-seo.com/fr/reecriture-url-intermediaire/', 3 =>  'http://www.phpbb-seo.com/fr/reecriture-url-avancee/', 'u' => 'http://www.phpbb-seo.com/fr/mod-rewrite-phpbb/' );
 
-		if (strpos($config['default_lang'], 'fr') !== false)
+		if (strpos($config['default_lang'], 'fr') !== false )
 		{
 			$modrtype_lang['linkurl'] = $modrtype_lang['modrlinks_fr'][\phpbbseo\usu\core::$modrtype];
 			$modrtype_lang['forumlinkurl'] = $modrtype_lang['modrforumlinks_fr'][\phpbbseo\usu\core::$modrtype];
