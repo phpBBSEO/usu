@@ -665,8 +665,8 @@ class usu
 			'S_ERROR'			=> (sizeof($error)) ? true : false,
 			'ERROR_MSG'			=> implode('<br />', $error),
 
-			'U_ACTION'			=> $this->u_action),
-		);
+			'U_ACTION'			=> $this->u_action,
+		));
 
 		// Output relevant page
 		foreach ($display_vars['vars'] as $config_key => $vars)
@@ -680,8 +680,8 @@ class usu
 			{
 				$template->assign_block_vars('options', array(
 					'S_LEGEND'		=> true,
-					'LEGEND'		=> (isset($user->lang[$vars])) ? $user->lang[$vars] : $vars),
-				);
+					'LEGEND'		=> (isset($user->lang[$vars])) ? $user->lang[$vars] : $vars
+				));
 
 				continue;
 			}
