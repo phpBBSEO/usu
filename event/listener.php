@@ -138,20 +138,20 @@ class listener implements EventSubscriberInterface
 					$default_sort_key = (!empty($user_data['user_topic_sortby_type'])) ? $user_data['user_topic_sortby_type'] : 't';
 					$default_sort_dir = (!empty($user_data['user_topic_sortby_dir'])) ? $user_data['user_topic_sortby_dir'] : 'd';
 
-					$mark_read = request_var('mark', '');
-					$sort_days = request_var('st', $default_sort_days);
-					$sort_key = request_var('sk', $default_sort_key);
-					$sort_dir = request_var('sd', $default_sort_dir);
+					$mark_read = $this->request->variable('mark', '');
+					$sort_days = $this->request->variable('st', $default_sort_days);
+					$sort_key = $this->request->variable('sk', $default_sort_key);
+					$sort_dir = $this->request->variable('sd', $default_sort_dir);
 					$keep_mark = in_array($mark_read, array('topics', 'topic', 'forums', 'all')) ? (boolean) ($user_data['is_registered'] || $config['load_anon_lastread']) : false;
 
 					\phpbbseo\usu\core::$seo_opt['zero_dupe']['redir_def'] = array(
-						'hash'		=> array('val' => request_var('hash', ''), 'keep' => $keep_mark),
+						'hash'		=> array('val' => $this->request->variable('hash', ''), 'keep' => $keep_mark),
 						'f'			=> array('val' => $this->forum_id, 'keep' => true, 'force' => true),
 						'st'		=> array('val' => $sort_days, 'keep' => true),
 						'sk'		=> array('val' => $sort_key, 'keep' => true),
 						'sd'		=> array('val' => $sort_dir, 'keep' => true),
 						'mark'		=> array('val' => $mark_read, 'keep' => $keep_mark),
-						'mark_time'	=> array('val' => request_var('mark_time', 0), 'keep' => $keep_mark),
+						'mark_time'	=> array('val' => $this->request->variable('mark_time', 0), 'keep' => $keep_mark),
 						'start'		=> array('val' => $this->start, 'keep' => true),
 					);
 
@@ -267,16 +267,16 @@ class listener implements EventSubscriberInterface
 						$default_sort_key = (!empty($user_data['user_topic_sortby_type'])) ? $user_data['user_topic_sortby_type'] : 't';
 						$default_sort_dir = (!empty($user_data['user_topic_sortby_dir'])) ? $user_data['user_topic_sortby_dir'] : 'd';
 
-						$sort_days = request_var('st', $default_sort_days);
-						$sort_key = request_var('sk', $default_sort_key);
-						$sort_dir = request_var('sd', $default_sort_dir);
-						$seo_watch = request_var('watch', '');
-						$seo_unwatch = request_var('unwatch', '');
-						$seo_bookmark = request_var('bookmark', 0);
+						$sort_days = $this->request->variable('st', $default_sort_days);
+						$sort_key = $this->request->variable('sk', $default_sort_key);
+						$sort_dir = $this->request->variable('sd', $default_sort_dir);
+						$seo_watch = $this->request->variable('watch', '');
+						$seo_unwatch = $this->request->variable('unwatch', '');
+						$seo_bookmark = $this->request->variable('bookmark', 0);
 						$keep_watch = (boolean) ($seo_watch == 'topic' && $user_data['is_registered']);
 						$keep_unwatch = (boolean) ($seo_unwatch == 'topic' && $user_data['is_registered']);
 						$keep_hash = (boolean) ($keep_watch || $keep_unwatch || $seo_bookmark);
-						$seo_uid = max(0, request_var('uid', 0));
+						$seo_uid = max(0, $this->request->variable('uid', 0));
 
 						\phpbbseo\usu\core::$seo_opt['zero_dupe']['redir_def'] = array(
 							'uid'		=> array('val' => $seo_uid, 'keep' => (boolean) ($keep_hash && $seo_uid)),
@@ -287,7 +287,7 @@ class listener implements EventSubscriberInterface
 							'unwatch'	=> array('val' => $seo_unwatch, 'keep' => $keep_unwatch),
 							'bookmark'	=> array('val' => $seo_bookmark, 'keep' => (boolean) ($user_data['is_registered'] && $this->config['allow_bookmarks'] && $seo_bookmark)),
 							'start'		=> array('val' => $this->start, 'keep' => true, 'force' => true),
-							'hash'		=> array('val' => request_var('hash', ''), 'keep' => $keep_hash),
+							'hash'		=> array('val' => $this->request->variable('hash', ''), 'keep' => $keep_hash),
 							'st'		=> array('val' => $sort_days, 'keep' => true),
 							'sk'		=> array('val' => $sort_key, 'keep' => true),
 							'sd'		=> array('val' => $sort_dir, 'keep' => true),
@@ -309,9 +309,9 @@ class listener implements EventSubscriberInterface
 
 				break;
 			case 'memberlist':
-				if (isset($_REQUEST['un']))
+				if ($this->is_set('un'))
 				{
-					$un = rawurldecode(request_var('un', '', true));
+					$un = rawurldecode($this->request->variable('un', '', true));
 
 					if (!\phpbbseo\usu\core::is_utf8($un))
 					{
@@ -334,12 +334,12 @@ class listener implements EventSubscriberInterface
 			return;
 		}
 
-		$this->start = max(0, request_var('start', 0));
+		$this->start = max(0, $this->request->variable('start', 0));
 
 		switch(\phpbbseo\usu\core::$seo_opt['req_file'])
 		{
 			case 'viewforum':
-				$this->forum_id = max(0, request_var('f', 0));
+				$this->forum_id = max(0, $this->request->variable('f', 0));
 
 				if (!$this->forum_id)
 				{
@@ -364,9 +364,9 @@ class listener implements EventSubscriberInterface
 
 				break;
 			case 'viewtopic':
-				$this->forum_id = max(0, request_var('f', 0));
-				$this->topic_id = max(0, request_var('t', 0));
-				$this->post_id = max(0, request_var('p', 0));
+				$this->forum_id = max(0, $this->request->variable('f', 0));
+				$this->topic_id = max(0, $this->request->variable('t', 0));
+				$this->post_id = max(0, $this->request->variable('p', 0));
 
 				if (!$this->forum_id)
 				{
@@ -378,7 +378,7 @@ class listener implements EventSubscriberInterface
 					}
 				}
 
-				$this->hilit_words = request_var('hilit', '', true);
+				$this->hilit_words = $this->request->variable('hilit', '', true);
 
 				if ($this->hilit_words)
 				{
@@ -637,7 +637,7 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 
 			$_parent = $post_data['topic_type'] == POST_GLOBAL ? \phpbbseo\usu\core::$seo_static['global_announce'] : \phpbbseo\usu\core::$seo_url['forum'][$forum_id];
 			$_t = !empty($data['topic_id']) ? max(0, (int) $data['topic_id'] ) : 0;
-			$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc(request_var('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
+			$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc($this->request->variable('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
 
 			if (!\phpbbseo\usu\core::check_url('topic', $_url, $_parent))
 			{
@@ -731,7 +731,7 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 
 				$_parent = $post_data['topic_type'] == POST_GLOBAL ? \phpbbseo\usu\core::$seo_static['global_announce'] : \phpbbseo\usu\core::$seo_url['forum'][$forum_id];
 				$_t = !empty($post_data['topic_id']) ? max(0, (int) $post_data['topic_id'] ) : 0;
-				$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc(request_var('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
+				$_url = \phpbbseo\usu\core::url_can_edit($forum_id) ? utf8_normalize_nfc($this->request->variable('url', '', true)) : ( isset($post_data['topic_url']) ? $post_data['topic_url'] : '' );
 
 				if (!\phpbbseo\usu\core::check_url('topic', $_url, $_parent))
 				{
