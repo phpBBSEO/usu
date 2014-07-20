@@ -6,10 +6,11 @@
 #
 # You must indent with 4 spaces instead of 1 tab
 #
-services: 
+services:
     phpbbseo.usu.listener:
         class: phpbbseo\usu\event\listener
         arguments:
+            - @phpbb.usu.core
             - @config
             - @auth
             - @template
@@ -21,10 +22,37 @@ services:
         tags:
             - { name: event.listener }
 
-    pagination:
+    phpbbseo.usu.core:
+        class: phpbbseo\usu\core
+        arguments:
+            - @config
+            - @request
+            - @user
+            - @auth
+            - @phpbbseo.usu.customise
+            - @phpbbseo.usu.rewriter
+            - %core.root_path%
+            - %core.php_ext%
+
+    phpbbseo.usu.rewriter:
+        class: phpbbseo\usu\rewriter
+        arguments:
+            - @phpbb.usu.core
+            - @user
+            - %core.root_path%
+
+    phpbb.usu.pagination:
         class: phpbbseo\usu\pagination
         arguments:
+            - @phpbb.usu.core
             - @template
             - @user
             - @controller.helper
             - %core.php_ext%
+
+    phpbbseo.usu.customise:
+        class: phpbbseo\usu\rewriter
+        arguments:
+            - @phpbb.usu.core
+            - @config
+

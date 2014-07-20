@@ -7,6 +7,7 @@
 * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *
 */
+
 namespace phpbbseo\usu;
 
 /**
@@ -14,57 +15,79 @@ namespace phpbbseo\usu;
 * www.phpBB-SEO.com
 * @package Ultimate SEO URL phpBB SEO
 */
-
 class rewriter
 {
+	/** @var \phpbbseo\usu\core */
+	private $core;
+
+	/* @var \phpbb\user */
+	private $user;
+
+	/**
+	* Current $phpbb_root_path
+	* @var string
+	*/
+	private $phpbb_root_path;
+
+	/**
+	* Constructor
+	*
+	* @param	\phpbbseo\usu\core			$core
+	* @param	\phpbb\user					$user				User object
+	* @param	string						$phpbb_root_path	Path to the phpBB root
+	*/
+	public function __construct(\phpbbseo\usu\core $core, \phpbb\user $user, $phpbb_root_path)
+	{
+		$this->core = $core;
+		$this->phpbb_root_path = $phpbb_root_path;
+	}
+
 	/**
 	* URL rewritting for viewtopic.php
 	* With Virtual Folder Injection
 	*/
-	public static function viewtopic()
+	public function viewtopic()
 	{
-		global $phpbb_root_path;
+		$this->core->filter_url($this->core->stop_vars);
+		$this->core->path = $this->core->seo_path['phpbb_urlR'];
 
-		core::filter_url(core::$stop_vars);
-		core::$path = core::$seo_path['phpbb_urlR'];
-
-		if (!empty(core::$get_vars['p']))
+		if (!empty($this->core->get_vars['p']))
 		{
-			core::$url = core::$seo_static['post'] . core::$get_vars['p'] . core::$seo_ext['post'];
+			$this->core->url = $this->core->seo_static['post'] . $this->core->get_vars['p'] . $this->core->seo_ext['post'];
 
-			unset(core::$get_vars['p'], core::$get_vars['f'], core::$get_vars['t'], core::$get_vars['start']);
+			unset($this->core->get_vars['p'], $this->core->get_vars['f'], $this->core->get_vars['t'], $this->core->get_vars['start']);
 
 			return;
 		}
 
-		if (isset(core::$get_vars['t']) && !empty(core::$seo_url['topic'][core::$get_vars['t']]))
+		if (isset($this->core->get_vars['t']) && !empty($this->core->seo_url['topic'][$this->core->get_vars['t']]))
 		{
-			$paginate_method_name = core::$paginate_method['topic'];
+			$paginate_method_name = $this->core->paginate_method['topic'];
 
 			// Filter default params
-			core::filter_get_var(core::$get_filter['topic']);
-			core::$paginate_method_name(core::$seo_ext['topic']);
-			core::$url = core::$seo_url['topic'][core::$get_vars['t']] . core::$start;
+			$this->core->filter_get_var($this->core->get_filter['topic']);
+			$this->core->paginate_method_name($this->core->seo_ext['topic']);
+			$this->core->url = $this->core->seo_url['topic'][$this->core->get_vars['t']] . $this->core->start;
 
-			unset(core::$get_vars['t'], core::$get_vars['f'], core::$get_vars['p']);
+			unset($this->core->get_vars['t'], $this->core->get_vars['f'], $this->core->get_vars['p']);
 
 			return;
 		}
-		else if (!empty(core::$get_vars['t']))
+		else if (!empty($this->core->get_vars['t']))
 		{
-			$paginate_method_name = core::$paginate_method['topic'];
+			$paginate_method_name = $this->core->paginate_method['topic'];
 
 			// Filter default params
-			core::filter_get_var(core::$get_filter['topic']);
-			core::$paginate_method_name(core::$seo_ext['topic']);
-			core::$url = core::$seo_static['topic'] . core::$get_vars['t'] . core::$start;
+			$this->core->filter_get_var($this->core->get_filter['topic']);
+			$this->core->paginate_method_name($this->core->seo_ext['topic']);
+			$this->core->url = $this->core->seo_static['topic'] . $this->core->get_vars['t'] . $this->core->start;
 
-			unset(core::$get_vars['t'], core::$get_vars['f'], core::$get_vars['p']);
+			unset($this->core->get_vars['t'], $this->core->get_vars['f'], $this->core->get_vars['p']);
 
 			return;
 		}
 
-		core::$path = core::$seo_path['phpbb_url'];
+		$this->core->path = $this->core->seo_path['phpbb_url'];
 
 		return;
 	}
@@ -72,36 +95,34 @@ class rewriter
 	/**
 	* URL rewritting for viewforum.php
 	*/
-	public static function viewforum()
+	public function viewforum()
 	{
-		global $phpbb_root_path;
+		$this->core->path = $this->core->seo_path['phpbb_urlR'];
+		$this->core->filter_url($this->core->stop_vars);
 
-		core::$path = core::$seo_path['phpbb_urlR'];
-		core::filter_url(core::$stop_vars);
-
-		if (!empty(core::$get_vars['f']))
+		if (!empty($this->core->get_vars['f']))
 		{
-			$paginate_method_name = core::$paginate_method['forum'];
+			$paginate_method_name = $this->core->paginate_method['forum'];
 
 			// Filter default params
-			core::filter_get_var(core::$get_filter['forum']);
-			core::$paginate_method_name(core::$seo_ext['forum']);
+			$this->core->filter_get_var($this->core->get_filter['forum']);
+			$this->core->paginate_method_name($this->core->seo_ext['forum']);
 
-			if (empty(core::$seo_url['forum'][core::$get_vars['f']]))
+			if (empty($this->core->seo_url['forum'][$this->core->get_vars['f']]))
 			{
-				core::$url = core::$seo_static['forum'] . core::$get_vars['f'] . core::$start;
+				$this->core->url = $this->core->seo_static['forum'] . $this->core->get_vars['f'] . $this->core->start;
 			}
 			else
 			{
-				core::$url = core::$seo_url['forum'][core::$get_vars['f']] . core::$start;
+				$this->core->url = $this->core->seo_url['forum'][$this->core->get_vars['f']] . $this->core->start;
 			}
 
-			unset(core::$get_vars['f']);
+			unset($this->core->get_vars['f']);
 
 			return;
 		}
 
-		core::$path = core::$seo_path['phpbb_url'];
+		$this->core->path = $this->core->seo_path['phpbb_url'];
 
 		return;
 	}
@@ -110,41 +131,39 @@ class rewriter
 	* URL rewritting for memberlist.php
 	* with nicknames and group name injection
 	*/
-	public static function memberlist()
+	public function memberlist()
 	{
-		global $phpbb_root_path;
+		$this->core->path = $this->core->seo_path['phpbb_urlR'];
 
-		core::$path = core::$seo_path['phpbb_urlR'];
-
-		if (@core::$get_vars['mode'] === 'viewprofile' && !@empty(core::$seo_url['user'][core::$get_vars['u']]))
+		if (@$this->core->get_vars['mode'] === 'viewprofile' && !@empty($this->core->seo_url['user'][$this->core->get_vars['u']]))
 		{
-			core::$url = core::$seo_url['user'][core::$get_vars['u']] . core::$seo_ext['user'];
+			$this->core->url = $this->core->seo_url['user'][$this->core->get_vars['u']] . $this->core->seo_ext['user'];
 
-			unset(core::$get_vars['mode'], core::$get_vars['u']);
+			unset($this->core->get_vars['mode'], $this->core->get_vars['u']);
 
 			return;
 		}
-		else if (@core::$get_vars['mode'] === 'group' && !@empty(core::$seo_url['group'][core::$get_vars['g']]))
+		else if (@$this->core->get_vars['mode'] === 'group' && !@empty($this->core->seo_url['group'][$this->core->get_vars['g']]))
 		{
-			$paginate_method_name = core::$paginate_method['group'];
+			$paginate_method_name = $this->core->paginate_method['group'];
 
-			core::$paginate_method_name(core::$seo_ext['group']);
-			core::$url =  core::$seo_url['group'][core::$get_vars['g']] . core::$start;
+			$this->core->paginate_method_name($this->core->seo_ext['group']);
+			$this->core->url =  $this->core->seo_url['group'][$this->core->get_vars['g']] . $this->core->start;
 
-			unset(core::$get_vars['mode'], core::$get_vars['g']);
+			unset($this->core->get_vars['mode'], $this->core->get_vars['g']);
 
 			return;
 		}
-		else if (@core::$get_vars['mode'] === 'leaders')
+		else if (@$this->core->get_vars['mode'] === 'leaders')
 		{
-			core::$url =  core::$seo_static['leaders'] . core::$seo_ext['leaders'];
+			$this->core->url =  $this->core->seo_static['leaders'] . $this->core->seo_ext['leaders'];
 
-			unset(core::$get_vars['mode']);
+			unset($this->core->get_vars['mode']);
 
 			return;
 		}
 
-		core::$path = core::$seo_path['phpbb_url'];
+		$this->core->path = $this->core->seo_path['phpbb_url'];
 
 		return;
 	}
@@ -152,127 +171,123 @@ class rewriter
 	/**
 	* URL rewritting for search.php
 	*/
-	public static function search()
+	public function search()
 	{
-		global $phpbb_root_path;
-
-		if (isset(core::$get_vars['fid']))
+		if (isset($this->core->get_vars['fid']))
 		{
-			core::$get_vars = array();
-			core::$url = core::$url_in;
+			$this->core->get_vars = array();
+			$this->core->url = $this->core->url_in;
 
 			return;
 		}
 
-		core::$path = core::$seo_path['phpbb_urlR'];
+		$this->core->path = $this->core->seo_path['phpbb_urlR'];
 
-		$user_id = !empty(core::$get_vars['author_id']) ? core::$get_vars['author_id'] : (isset(core::$seo_url['username'][rawurldecode(@core::$get_vars['author'])]) ? core::$seo_url['username'][rawurldecode(@core::$get_vars['author'])] : 0);
+		$user_id = !empty($this->core->get_vars['author_id']) ? $this->core->get_vars['author_id'] : (isset($this->core->seo_url['username'][rawurldecode(@$this->core->get_vars['author'])]) ? $this->core->seo_url['username'][rawurldecode(@$this->core->get_vars['author'])] : 0);
 
-		if ($user_id && isset(core::$seo_url['user'][$user_id]))
+		if ($user_id && isset($this->core->seo_url['user'][$user_id]))
 		{
-			$sr = (@core::$get_vars['sr'] == 'topics' ) ? 'topics' : 'posts';
+			$sr = (@$this->core->get_vars['sr'] == 'topics' ) ? 'topics' : 'posts';
 
-			$paginate_method_name = core::$paginate_method['user'];
+			$paginate_method_name = $this->core->paginate_method['user'];
 
 			// Filter default params
-			core::filter_get_var(core::$get_filter['search']);
-			core::$paginate_method_name(core::$seo_ext['user']);
-			core::$url = core::$seo_url['user'][$user_id] . core::$seo_delim['sr'] . $sr . core::$start;
+			$this->core->filter_get_var($this->core->get_filter['search']);
+			$this->core->paginate_method_name($this->core->seo_ext['user']);
+			$this->core->url = $this->core->seo_url['user'][$user_id] . $this->core->seo_delim['sr'] . $sr . $this->core->start;
 
-			unset(core::$get_vars['author_id'], core::$get_vars['author'], core::$get_vars['sr']);
+			unset($this->core->get_vars['author_id'], $this->core->get_vars['author'], $this->core->get_vars['sr']);
 
 			return;
 		}
-		else if (core::$seo_opt['profile_noids'] && !empty(core::$get_vars['author']))
+		else if ($this->core->seo_opt['profile_noids'] && !empty($this->core->get_vars['author']))
 		{
-			$sr = (@core::$get_vars['sr'] == 'topics') ? '/topics' : '/posts';
+			$sr = (@$this->core->get_vars['sr'] == 'topics') ? '/topics' : '/posts';
 
 			// Filter default params
-			core::filter_get_var(core::$get_filter['search']);
-			core::rewrite_pagination_page();
-			core::$url = core::$seo_static['user'] . '/' . core::seo_url_encode(core::$get_vars['author']) . $sr . core::$start;
+			$this->core->filter_get_var($this->core->get_filter['search']);
+			$this->core->rewrite_pagination_page();
+			$this->core->url = $this->core->seo_static['user'] . '/' . $this->core->seo_url_encode($this->core->get_vars['author']) . $sr . $this->core->start;
 
-			unset(core::$get_vars['author'], core::$get_vars['author_id'], core::$get_vars['sr']);
+			unset($this->core->get_vars['author'], $this->core->get_vars['author_id'], $this->core->get_vars['sr']);
 
 			return;
 		}
-		else if (!empty(core::$get_vars['search_id']))
+		else if (!empty($this->core->get_vars['search_id']))
 		{
-			switch (core::$get_vars['search_id'])
+			switch ($this->core->get_vars['search_id'])
 			{
 				case 'active_topics':
-					$paginate_method_name = core::$paginate_method['atopic'];
+					$paginate_method_name = $this->core->paginate_method['atopic'];
 
-					core::filter_get_var(core::$get_filter['search']);
-					core::$paginate_method_name(core::$seo_ext['atopic']);
-					core::$url = core::$seo_static['atopic'] . core::$start;
+					$this->core->filter_get_var($this->core->get_filter['search']);
+					$this->core->paginate_method_name($this->core->seo_ext['atopic']);
+					$this->core->url = $this->core->seo_static['atopic'] . $this->core->start;
 
-					unset(core::$get_vars['search_id'], core::$get_vars['sr']);
+					unset($this->core->get_vars['search_id'], $this->core->get_vars['sr']);
 
-					if (@core::$get_vars['st'] == 7)
+					if (@$this->core->get_vars['st'] == 7)
 					{
-						unset(core::$get_vars['st']);
+						unset($this->core->get_vars['st']);
 					}
 
 					return;
 				case 'unanswered':
-					$paginate_method_name = core::$paginate_method['utopic'];
+					$paginate_method_name = $this->core->paginate_method['utopic'];
 
-					core::filter_get_var(core::$get_filter['search']);
-					core::$paginate_method_name(core::$seo_ext['utopic']);
-					core::$url = core::$seo_static['utopic'] . core::$start;
+					$this->core->filter_get_var($this->core->get_filter['search']);
+					$this->core->paginate_method_name($this->core->seo_ext['utopic']);
+					$this->core->url = $this->core->seo_static['utopic'] . $this->core->start;
 
-					unset(core::$get_vars['search_id']);
+					unset($this->core->get_vars['search_id']);
 
-					if (@core::$get_vars['sr'] == 'topics')
+					if (@$this->core->get_vars['sr'] == 'topics')
 					{
-						unset(core::$get_vars['sr']);
+						unset($this->core->get_vars['sr']);
 					}
 
 					return;
 				case 'egosearch':
-					global $user;
+					$this->core->set_user_url($this->user->data['username'], $this->user->data['user_id']);
+					$this->core->url = $this->core->seo_url['user'][$this->user->data['user_id']] . $this->core->seo_delim['sr'] . 'topics' . $this->core->seo_ext['user'];
 
-					core::set_user_url($user->data['username'], $user->data['user_id']);
-					core::$url = core::$seo_url['user'][$user->data['user_id']] . core::$seo_delim['sr'] . 'topics' . core::$seo_ext['user'];
-
-					unset(core::$get_vars['search_id']);
+					unset($this->core->get_vars['search_id']);
 
 					return;
 				case 'newposts':
-					$paginate_method_name = core::$paginate_method['npost'];
+					$paginate_method_name = $this->core->paginate_method['npost'];
 
-					core::filter_get_var(core::$get_filter['search']);
-					core::$paginate_method_name(core::$seo_ext['npost']);
-					core::$url = core::$seo_static['npost'] . core::$start;
+					$this->core->filter_get_var($this->core->get_filter['search']);
+					$this->core->paginate_method_name($this->core->seo_ext['npost']);
+					$this->core->url = $this->core->seo_static['npost'] . $this->core->start;
 
-					unset(core::$get_vars['search_id']);
+					unset($this->core->get_vars['search_id']);
 
-					if (@core::$get_vars['sr'] == 'topics')
+					if (@$this->core->get_vars['sr'] == 'topics')
 					{
-						unset(core::$get_vars['sr']);
+						unset($this->core->get_vars['sr']);
 					}
 
 					return;
 				case 'unreadposts':
-					$paginate_method_name = core::$paginate_method['urpost'];
+					$paginate_method_name = $this->core->paginate_method['urpost'];
 
-					core::filter_get_var(core::$get_filter['search']);
-					core::$paginate_method_name(core::$seo_ext['urpost']);
-					core::$url = core::$seo_static['urpost'] . core::$start;
+					$this->core->filter_get_var($this->core->get_filter['search']);
+					$this->core->paginate_method_name($this->core->seo_ext['urpost']);
+					$this->core->url = $this->core->seo_static['urpost'] . $this->core->start;
 
-					unset(core::$get_vars['search_id']);
+					unset($this->core->get_vars['search_id']);
 
-					if (@core::$get_vars['sr'] == 'topics')
+					if (@$this->core->get_vars['sr'] == 'topics')
 					{
-						unset(core::$get_vars['sr']);
+						unset($this->core->get_vars['sr']);
 					}
 
 					return;
 			}
 		}
 
-		core::$path = core::$seo_path['phpbb_url'];
+		$this->core->path = $this->core->seo_path['phpbb_url'];
 
 		return;
 	}
@@ -280,34 +295,34 @@ class rewriter
 	/**
 	* URL rewritting for download/file.php
 	*/
-	public static function phpbb_files()
+	public function phpbb_files()
 	{
-		core::filter_url(core::$stop_vars);
-		core::$path = core::$seo_path['phpbb_filesR'];
+		$this->core->filter_url($this->core->stop_vars);
+		$this->core->path = $this->core->seo_path['phpbb_filesR'];
 
-		if (isset(core::$get_vars['id']) && !empty(core::$seo_url['file'][core::$get_vars['id']]))
+		if (isset($this->core->get_vars['id']) && !empty($this->core->seo_url['file'][$this->core->get_vars['id']]))
 		{
-			core::$url = core::$seo_url['file'][core::$get_vars['id']];
+			$this->core->url = $this->core->seo_url['file'][$this->core->get_vars['id']];
 
-			if (!empty(core::$get_vars['t']))
+			if (!empty($this->core->get_vars['t']))
 			{
-				core::$url .= core::$seo_delim['file'] . core::$seo_static['thumb'];
+				$this->core->url .= $this->core->seo_delim['file'] . $this->core->seo_static['thumb'];
 			}
 			/*
-			else if (@core::$get_vars['mode'] == 'view')
+			else if (@$this->core->get_vars['mode'] == 'view')
 			{
-				core::$url .= core::$seo_delim['file'] . 'view';
+				$this->core->url .= $this->core->seo_delim['file'] . 'view';
 			}
 			*/
 
-			core::$url .= core::$seo_delim['file'] . core::$get_vars['id'];
+			$this->core->url .= $this->core->seo_delim['file'] . $this->core->get_vars['id'];
 
-			unset(core::$get_vars['id'], core::$get_vars['t'], core::$get_vars['mode']);
+			unset($this->core->get_vars['id'], $this->core->get_vars['t'], $this->core->get_vars['mode']);
 
 			return;
 		}
 
-		core::$path = core::$seo_path['phpbb_files'];
+		$this->core->path = $this->core->seo_path['phpbb_files'];
 
 		return;
 	}
@@ -315,18 +330,18 @@ class rewriter
 	/**
 	* URL rewritting for index.php
 	*/
-	public static function index()
+	public function index()
 	{
-		core::$path = core::$seo_path['phpbb_urlR'];
+		$this->core->path = $this->core->seo_path['phpbb_urlR'];
 
-		if (core::filter_url(core::$stop_vars))
+		if ($this->core->filter_url($this->core->stop_vars))
 		{
-			core::$url = core::$seo_static['index'] . core::$seo_ext['index'];
+			$this->core->url = $this->core->seo_static['index'] . $this->core->seo_ext['index'];
 
 			return;
 		}
 
-		core::$path = core::$seo_path['phpbb_url'];
+		$this->core->path = $this->core->seo_path['phpbb_url'];
 
 		return;
 	}

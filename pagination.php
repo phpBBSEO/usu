@@ -17,31 +17,36 @@ namespace phpbbseo\usu;
 */
 class pagination extends \phpbb\pagination
 {
+	/** @var \phpbbseo\usu\core */
+	private $core;
+
 	/** @var \phpbb\template\template */
-	protected $template;
+	private $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	private $user;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	private $helper;
 
 	/**
 	* Current $php_ext
 	* @var string
 	*/
-	protected $php_ext;
+	private $php_ext;
 
 	/**
 	* Constructor
 	*
+	* @param	\phpbbseo\usu\core			$core
 	* @param	\phpbb\template\template	$template
 	* @param	\phpbb\user					$user
 	* @param	\phpbb\controller\helper	$helper
-	* @param string					$php_ext		PHP file extension
+	* @param	string						$php_ext		PHP file extension
 	*/
-	public function __construct(\phpbb\template\template $template, \phpbb\user $user, \phpbb\controller\helper $helper, $php_ext)
+	public function __construct(\phpbbseo\usu\core $core, \phpbb\template\template $template, \phpbb\user $user, \phpbb\controller\helper $helper, $php_ext)
 	{
+		$this->core = $core;
 		$this->template = $template;
 		$this->user = $user;
 		$this->helper = $helper;
@@ -54,7 +59,7 @@ class pagination extends \phpbb\pagination
 	*/
 	public function generate_page_link($base_url, $on_page, $start_name, $per_page)
 	{
-		static $paginated = array();
+		$paginated = array();
 
 		if (!is_string($base_url))
 		{
@@ -81,7 +86,7 @@ class pagination extends \phpbb\pagination
 
 		if (!isset($paginated[$base_url]))
 		{
-			$rewriten = core::url_rewrite($base_url);
+			$rewriten = $this->core->url_rewrite($base_url);
 
 			@list($rewriten, $qs) = explode('?', $rewriten, 2);
 
@@ -103,12 +108,12 @@ class pagination extends \phpbb\pagination
 				if ($hasExt)
 				{
 					// start location is before the ext
-					$rewriten = preg_replace('`^((https?\:)?//[^/]+.+)(\.[a-z0-9]+)$`i', '\1' . core::$seo_delim['start'] . '%2\$s\3', $rewriten);
+					$rewriten = preg_replace('`^((https?\:)?//[^/]+.+)(\.[a-z0-9]+)$`i', '\1' . $this->core->seo_delim['start'] . '%2\$s\3', $rewriten);
 				}
 				else
 				{
 					// start is appened
-					$rewriten = rtrim($rewriten, '/') . '/' . core::$seo_static['pagination'] .  '%2$s' . core::$seo_ext['pagination'];
+					$rewriten = rtrim($rewriten, '/') . '/' . $this->core->seo_static['pagination'] .  '%2$s' . $this->core->seo_ext['pagination'];
 				}
 
 				$paginated[$base_url] = $rewriten . ($qs ? "?$qs" : '');
