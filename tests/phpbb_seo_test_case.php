@@ -18,7 +18,7 @@ class phpbb_seo_test_case extends \phpbb_test_case
 
 	public function setUp()
 	{
-		global $phpbb_root_path, $phpEx, $config, $request;
+		global $phpbb_root_path, $phpEx, $config, $request, $user, $auth;
 
 		require_once $phpbb_root_path . 'includes/utf/utf_tools.' . $phpEx;
 
@@ -29,8 +29,9 @@ class phpbb_seo_test_case extends \phpbb_test_case
 		));
 
 		$request = new \phpbbseo\usu\tests\mock\request();
+		$user = new \phpbbseo\usu\tests\mock\user();
+		$auth = new \phpbbseo\usu\tests\mock\auth();
 
-		$this->phpbb_seo = new \phpbbseo\usu\core();
-		$this->phpbb_seo->init();
+		$this->phpbb_seo = new \phpbbseo\usu\core($config, $request, $user, $auth, $phpbb_root_path, $phpEx);
 	}
 }
