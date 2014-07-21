@@ -90,7 +90,7 @@ class listener implements EventSubscriberInterface
 		$this->php_ext = $php_ext;
 	}
 
-	public function getSubscribedEvents()
+	public static function getSubscribedEvents()
 	{
 		return array(
 			'core.common'						=> 'core_common',

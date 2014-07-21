@@ -38,7 +38,7 @@ class customise
 	/**
 	* inject()
 	*/
-	public static function inject()
+	public function inject()
 	{
 		// ===> Custom url replacements <===
 		// Here you can set up custom replacements to be used in title injection.

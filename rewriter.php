@@ -66,7 +66,7 @@ class rewriter
 
 			// Filter default params
 			$this->core->filter_get_var($this->core->get_filter['topic']);
-			$this->core->paginate_method_name($this->core->seo_ext['topic']);
+			$this->core->$paginate_method_name($this->core->seo_ext['topic']);
 			$this->core->url = $this->core->seo_url['topic'][$this->core->get_vars['t']] . $this->core->start;
 
 			unset($this->core->get_vars['t'], $this->core->get_vars['f'], $this->core->get_vars['p']);
@@ -79,7 +79,7 @@ class rewriter
 
 			// Filter default params
 			$this->core->filter_get_var($this->core->get_filter['topic']);
-			$this->core->paginate_method_name($this->core->seo_ext['topic']);
+			$this->core->$paginate_method_name($this->core->seo_ext['topic']);
 			$this->core->url = $this->core->seo_static['topic'] . $this->core->get_vars['t'] . $this->core->start;
 
 			unset($this->core->get_vars['t'], $this->core->get_vars['f'], $this->core->get_vars['p']);
@@ -106,7 +106,7 @@ class rewriter
 
 			// Filter default params
 			$this->core->filter_get_var($this->core->get_filter['forum']);
-			$this->core->paginate_method_name($this->core->seo_ext['forum']);
+			$this->core->$paginate_method_name($this->core->seo_ext['forum']);
 
 			if (empty($this->core->seo_url['forum'][$this->core->get_vars['f']]))
 			{
@@ -147,7 +147,7 @@ class rewriter
 		{
 			$paginate_method_name = $this->core->paginate_method['group'];
 
-			$this->core->paginate_method_name($this->core->seo_ext['group']);
+			$this->core->$paginate_method_name($this->core->seo_ext['group']);
 			$this->core->url =  $this->core->seo_url['group'][$this->core->get_vars['g']] . $this->core->start;
 
 			unset($this->core->get_vars['mode'], $this->core->get_vars['g']);
@@ -193,7 +193,7 @@ class rewriter
 
 			// Filter default params
 			$this->core->filter_get_var($this->core->get_filter['search']);
-			$this->core->paginate_method_name($this->core->seo_ext['user']);
+			$this->core->$paginate_method_name($this->core->seo_ext['user']);
 			$this->core->url = $this->core->seo_url['user'][$user_id] . $this->core->seo_delim['sr'] . $sr . $this->core->start;
 
 			unset($this->core->get_vars['author_id'], $this->core->get_vars['author'], $this->core->get_vars['sr']);
@@ -221,7 +221,7 @@ class rewriter
 					$paginate_method_name = $this->core->paginate_method['atopic'];
 
 					$this->core->filter_get_var($this->core->get_filter['search']);
-					$this->core->paginate_method_name($this->core->seo_ext['atopic']);
+					$this->core->$paginate_method_name($this->core->seo_ext['atopic']);
 					$this->core->url = $this->core->seo_static['atopic'] . $this->core->start;
 
 					unset($this->core->get_vars['search_id'], $this->core->get_vars['sr']);
@@ -236,7 +236,7 @@ class rewriter
 					$paginate_method_name = $this->core->paginate_method['utopic'];
 
 					$this->core->filter_get_var($this->core->get_filter['search']);
-					$this->core->paginate_method_name($this->core->seo_ext['utopic']);
+					$this->core->$paginate_method_name($this->core->seo_ext['utopic']);
 					$this->core->url = $this->core->seo_static['utopic'] . $this->core->start;
 
 					unset($this->core->get_vars['search_id']);
@@ -258,7 +258,7 @@ class rewriter
 					$paginate_method_name = $this->core->paginate_method['npost'];
 
 					$this->core->filter_get_var($this->core->get_filter['search']);
-					$this->core->paginate_method_name($this->core->seo_ext['npost']);
+					$this->core->$paginate_method_name($this->core->seo_ext['npost']);
 					$this->core->url = $this->core->seo_static['npost'] . $this->core->start;
 
 					unset($this->core->get_vars['search_id']);
@@ -273,7 +273,7 @@ class rewriter
 					$paginate_method_name = $this->core->paginate_method['urpost'];
 
 					$this->core->filter_get_var($this->core->get_filter['search']);
-					$this->core->paginate_method_name($this->core->seo_ext['urpost']);
+					$this->core->$paginate_method_name($this->core->seo_ext['urpost']);
 					$this->core->url = $this->core->seo_static['urpost'] . $this->core->start;
 
 					unset($this->core->get_vars['search_id']);

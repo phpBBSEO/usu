@@ -10,6 +10,9 @@
 
 namespace phpbbseo\usu;
 
+use phpbbseo\usu\customise;
+use phpbbseo\usu\rewriter;
+
 /**
 * core Class
 * www.phpBB-SEO.com
@@ -221,22 +224,21 @@ class core
 	* @param	\phpbb\request\request	$request			Request object
 	* @param	\phpbb\user				$user				User object
 	* @param	\phpbb\auth\auth		$auth				Auth object
-	* @param	\phpbbseo\usu\customise	$customise			Customise object
-	* @param	\phpbbseo\usu\rewriter	$rewriter			Rewriter object
 	* @param	string					$phpbb_root_path	Path to the phpBB root
 	* @param	string					$php_ext			PHP file extension
 	*
 	*/
-	public function __construct(\phpbb\config\config $config, \phpbb\request\request $request, \phpbb\user $user, \phpbb\auth\auth $auth, \phpbbseo\usu\customise $customise, \phpbbseo\usu\rewriter $rewriter, $phpbb_root_path, $php_ext)
+	public function __construct(\phpbb\config\config $config, \phpbb\request\request $request, \phpbb\user $user, \phpbb\auth\auth $auth, $phpbb_root_path, $php_ext)
 	{
 		$this->config = $config;
 		$this->request = $request;
 		$this->user = $user;
 		$this->auth = $auth;
-		$this->customise = $customise;
-		$this->rewriter = $rewriter;
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->php_ext = $php_ext;
+
+		$this->customise = new customise($this, $this->config);
+		$this->rewriter = new rewriter($this, $this->user, $this->phpbb_root_path);
 
 		// fix for an interesting bug with parse_str http://bugs.php.net/bug.php?id=48697
 		// and apparently, the bug is still here in php5.3
@@ -862,7 +864,7 @@ class core
 		{
 			$rewrite_method_name = $this->rewrite_method[$this->path][$this->filename];
 
-			$this->rewriter->rewrite_method_name();
+			$this->rewriter->$rewrite_method_name();
 
 			return ($this->seo_cache[$url] = $this->path . $this->url . $this->query_string($this->get_vars, $amp_delim, '?')) . $anchor;
 		}
@@ -1396,7 +1398,7 @@ class core
 			}
 		}
 
-		$this->page_url = append_sid($path . $this->seo_opt['req_file'] . '.' $this->php_ext, $params, true, 0);
+		$this->page_url = append_sid($path . $this->seo_opt['req_file'] . '.' . $this->php_ext, $params, true, 0);
 
 		return $this->page_url;
 	}
