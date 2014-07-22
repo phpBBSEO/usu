@@ -292,7 +292,7 @@ class usu
 						$title = '<b style="color:green">' . $forum_name . ' - ID ' . $forum_id . '</b>';
 						$status_msg = '<span style="color:green">' . $this->user->lang['SEO_CACHE_URL_OK'] . '&nbsp;:</span>&nbsp;<b style="color:green">' . $this->new_config['forum_url' . $forum_id] . '</b>';
 						$status_msg .= '<br/><span style="color:green">' . $this->user->lang['SEO_CACHE_URL'] . '&nbsp;:</span>&nbsp;' . $this->new_config['forum_url' . $forum_id] . $this->core->seo_ext['forum'];
-						
+
 						$display_vars['vars']['forum_url' . $forum_id] = array(
 							'lang'					=> $title,
 							'validate'				=> 'string:0:100',
