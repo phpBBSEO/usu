@@ -16,20 +16,30 @@ namespace phpbbseo\usu;
 */
 class customise
 {
+	/** @var \phpbbseo\usu\core */
+	private $core;
+
+	/** @var \phpbb\config\config */
+	private $config;
+
 	/**
-	* init()
+	* Constructor
+	*
+	* @param	\phpbbseo\usu\core		$core
+	* @param	\phpbb\config\config	$config				Config object
+	*
 	*/
-	public static function init()
+	public function __construct(\phpbbseo\usu\core $core, \phpbb\config\config $config)
 	{
+		$this->core = $core;
+		$this->config = $config;
 	}
 
 	/**
 	* inject()
 	*/
-	public static function inject()
+	public function inject()
 	{
-		global $phpEx, $config, $phpbb_root_path;
-
 		// ===> Custom url replacements <===
 		// Here you can set up custom replacements to be used in title injection.
 		// Example : array('find' => 'replace')
@@ -79,17 +89,17 @@ class customise
 		//
 
 		// ==> Special for lazy French, others may delete this part
-		if (strpos($config['default_lang'], 'fr') !== false)
+		if (strpos($this->config['default_lang'], 'fr') !== false)
 		{
-			core::$seo_static['user'] = 'membre';
-			core::$seo_static['group'] = 'groupe';
-			core::$seo_static['global_announce'] = 'annonces';
-			core::$seo_static['leaders'] = 'equipe';
-			core::$seo_static['atopic'] = 'sujets-actifs';
-			core::$seo_static['utopic'] = 'sans-reponses';
-			core::$seo_static['npost'] = 'nouveaux-messages';
-			core::$seo_static['urpost'] = 'non-lu';
-			core::$seo_static['file_index'] = 'ressources';
+			$this->core->seo_static['user'] = 'membre';
+			$this->core->seo_static['group'] = 'groupe';
+			$this->core->seo_static['global_announce'] = 'annonces';
+			$this->core->seo_static['leaders'] = 'equipe';
+			$this->core->seo_static['atopic'] = 'sujets-actifs';
+			$this->core->seo_static['utopic'] = 'sans-reponses';
+			$this->core->seo_static['npost'] = 'nouveaux-messages';
+			$this->core->seo_static['urpost'] = 'non-lu';
+			$this->core->seo_static['file_index'] = 'ressources';
 		}
 		// <== Special for lazy French, others may delete this part
 	}
