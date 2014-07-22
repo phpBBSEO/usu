@@ -32,7 +32,7 @@ class usu
 	function main($id, $mode)
 	{
 		global $config, $db, $user, $auth, $template, $cache, $request;
-		global $phpbb_root_path, $phpbb_admin_path, $phpEx, $table_prefix;
+		global $phpEx, $table_prefix;
 
 		$user->add_lang_ext('phpbbseo/usu', 'acp_usu');
 
@@ -801,20 +801,21 @@ class usu
 	*/
 	function seo_htaccess($html = true)
 	{
-		global $user, $error, $phpEx, $config, $phpbb_root_path, $config, $phpbb_admin_path;
+		global $user, $error, $phpEx, $config, $phpbb_root_path, $config;
 		static $htaccess_code = '';
 
 		$htaccess_tpl = '';
 
 		// GYM Sitemaps & RSS
-		$gym_installed = (boolean) (!empty($config['gym_installed']) && file_exists($phpbb_root_path . 'gym_sitemaps/includes/gym_sitemaps.' . $phpEx));
+		/*$gym_installed = (boolean) (!empty($config['gym_installed']) && file_exists($phpbb_root_path . 'gym_sitemaps/includes/gym_sitemaps.' . $phpEx));
 		$rss_path = $google_path = $html_path = '';
 		$rss_commpat_note = $google_commpat_note = $html_commpat_note = $compat_path_note = '';
 		$rss_commpat_pre = $html_commpat_pre = $google_commpat_pre = '<b style="color:blue"># RewriteRule';
 		$rss_commpat_post = $html_commpat_post = $google_commpat_post = '</b>';
 		$google_comp_path = $rss_comp_path = $html_comp_path = false;
+		 */
 
-		if ($gym_installed)
+		/*if ($gym_installed)
 		{
 			$compat_path_note = '<b style="color:red"># NOTE : THE FOLLOWING REWRITERULE IS LEFT COMMENTED BECAUSE IT CANNOT' . "\n";
 			$compat_path_note .= '# BE IMPLEMENTED IN THIS .HTACCESS, BUT RATHER IN AN ABOVE ONE' . "\n";
@@ -851,7 +852,7 @@ class usu
 				$html_commpat_pre = '<b style="color:green">RewriteRule</b>';
 				$html_commpat_post = $html_commpat_note = '';
 			}
-		}
+		}*/
 
 		if (empty($htaccess_code))
 		{
@@ -909,15 +910,8 @@ class usu
 			);
 
 			//
-			$htaccess_tpl = '<b style="color:blue"># Lines That should already be in your .htacess</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.{PHP_EX}"</b><b style="color:brown">&gt;</b>' . "\n";
-			$htaccess_tpl .= "\t" . 'Order Allow,Deny' . "\n";
-			$htaccess_tpl .= "\t" . 'Deny from All' . "\n";
-			$htaccess_tpl .= '<b style="color:brown">&lt;/Files&gt;</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"common.{PHP_EX}"</b><b style="color:brown">&gt;</b>' . "\n";
-			$htaccess_tpl .= "\t" . 'Order Allow,Deny' . "\n";
-			$htaccess_tpl .= "\t" . 'Deny from All' . "\n";
-			$htaccess_tpl .= '<b style="color:brown">&lt;/Files&gt;</b>' . "\n\n";
+			$htaccess_tpl = '<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">mod_rewrite.c</b><b style="color:brown">&gt;</b>' . "\n\n";
+
 			$htaccess_tpl .= '<b style="color:blue"># You may need to un-comment the following lines' . "\n";
 			$htaccess_tpl .= '# Options +FollowSymlinks' . "\n";
 			$htaccess_tpl .= '# To make sure that rewritten dir or file (/|.html) will not load dir.php in case it exist' . "\n";
@@ -993,7 +987,7 @@ class usu
 			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_LEADERS}{EXT_LEADERS}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=leaders [QSA,L,NC]' . "\n";
 			$htaccess_common_tpl .= '<b style="color:blue"># HERE IS A GOOD PLACE TO ADD OTHER PHPBB RELATED REWRITERULES</b>' . "\n\n";
 
-			if ($gym_installed)
+			/*if ($gym_installed)
 			{
 				$htaccess_common_tpl .= '<b style="color:blue">#####################################################' . "\n";
 
@@ -1009,7 +1003,7 @@ class usu
 				$htaccess_common_tpl .= $html_commpat_pre . ' ^{WIERD_SLASH}{HTML_LPATH}(news|maps){PAGE_PAGINATION}$ {DEFAULT_SLASH}{HTML_RPATH}map.{PHP_EX}?$1&amp;start=$3 [QSA,L,NC]' . $html_commpat_post . "\n";
 				$htaccess_common_tpl .= '<b style="color:blue"># END GYM Sitemaps &amp; RSS' . "\n";
 				$htaccess_common_tpl .= '#####################################################</b>' . "\n\n";
-			}
+			}*/
 
 			// We now handle all modes at once (simple / mixed / advanced)
 			$htaccess_tpl .= '<b style="color:blue"># FORUM ALL MODES</b>' . "\n";
@@ -1061,7 +1055,7 @@ class usu
 				$htaccess_tpl .= $mods_ht['pos2'];
 			}
 
-			if ($gym_installed)
+		/*	if ($gym_installed)
 			{
 				$htaccess_tpl .= '<b style="color:blue">#####################################################' . "\n";
 				$htaccess_tpl .= '# GYM Sitemaps &amp; RSS</b>' . "\n";
@@ -1094,7 +1088,68 @@ class usu
 				$htaccess_tpl .= $google_commpat_pre . ' ^{WIERD_SLASH}{GOOGLE_LPATH}([a-z0-9_]+)-([a-z0-9_-]+)\.xml(\.gz)?$ {DEFAULT_SLASH}{GOOGLE_RPATH}sitemap.{PHP_EX}?$1=$2&amp;gzip=$3 [QSA,L,NC]' . $google_commpat_post . "\n";
 				$htaccess_tpl .= '<b style="color:blue"># END GYM Sitemaps &amp; RSS' . "\n";
 				$htaccess_tpl .= '#####################################################</b>' . "\n";
-			}
+			}*/
+
+			$htaccess_tpl .= '#
+# The following 3 lines will rewrite URLs passed through the front controller
+# to not require app.php in the actual URL. In other words, a controller is
+# by default accessed at /app.php/my/controller, but can also be accessed at
+# /my/controller
+#
+<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-f
+<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-d
+<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}(.*)$ app.{PHP_EX} [QSA,L]' . "\n\n";
+
+			$htaccess_tpl .= '<b style="color:brown">&lt;/IfModule&gt;</b>' . "\n\n";
+
+			$htaccess_tpl .= '# With Apache 2.4 the "Order, Deny" syntax has been deprecated and moved from
+# module mod_authz_host to a new module called mod_access_compat (which may be
+# disabled) and a new "Require" syntax has been introduced to mod_authz_host.
+# We could just conditionally provide both versions, but unfortunately Apache
+# does not explicitly tell us its version if the module mod_version is not
+# available. In this case, we check for the availability of module
+# mod_authz_core (which should be on 2.4 or higher only) as a best guess.
+<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">mod_version.c</b><b style="color:brown">&gt;</b>
+	<b style="color:brown">&lt;IfVersion</b> <b style="color:#FF00FF">&lt; 2.4</b><b style="color:brown">&gt;</b>
+		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+			Order Allow,Deny
+			Deny from All
+		<b style="color:brown">&lt;/Files&gt;</b>
+		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+			Order Allow,Deny
+			Deny from All
+		<b style="color:brown">&lt;/Files&gt;</b>
+	<b style="color:brown">&lt;/IfVersion&gt;</b>
+	<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>IfVersion</b> <b style="color:#FF00FF">&gt;= 2.4</b><b style="color:brown">&gt;</b>
+		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+			Require all denied
+		<b style="color:brown">&lt;/Files&gt;</b>
+		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+			Require all denied
+		<b style="color:brown">&lt;/Files&gt;</b>
+	<b style="color:brown">&lt;/IfVersion&gt;</b>
+<b style="color:brown">&lt;/IfModule&gt;</b>
+<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">!mod_version.c</b><b style="color:brown">&gt;</b>
+	<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">!mod_authz_core.c</b><b style="color:brown">&gt;</b>
+		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+			Order Allow,Deny
+			Deny from All
+		<b style="color:brown">&lt;/Files&gt;</b>
+		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+			Order Allow,Deny
+			Deny from All
+		<b style="color:brown">&lt;/Files&gt;</b>
+	<b style="color:brown">&lt;/IfModule&gt;</b>
+	<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">mod_authz_core.c</b><b style="color:brown">&gt;</b>
+		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+			Require all denied
+		<b style="color:brown">&lt;/Files&gt;</b>
+		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+			Require all denied
+		<b style="color:brown">&lt;/Files&gt;</b>
+	<b style="color:brown">&lt;/IfModule&gt;</b>
+<b style="color:brown">&lt;/IfModule&gt;</b>';
+
 
 			if (!empty($default_slash) && $this->new_config['more_options'])
 			{
@@ -1209,7 +1264,7 @@ class usu
 	*/
 	function get_mods_ht()
 	{
-		global $phpEx, $config, $phpbb_root_path;
+		global $phpEx, $config;
 
 		$all_ht_tpl = array('pos1' => '', 'pos2' => '');
 		$path = PHPBB_SEO_USU_ROOT_DIR . 'htmods';
@@ -1332,7 +1387,7 @@ class usu
 				}
 
 				@fclose($fp);
-				@unlink($phpbb_root_path . $dir . 'test_lock');
+				@unlink($cache_dir . 'test_lock');
 			}
 			else
 			{
