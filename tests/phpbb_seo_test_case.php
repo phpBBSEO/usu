@@ -49,11 +49,16 @@ class phpbb_seo_test_case extends \phpbb_test_case
 			'rem_sid'				=> false,
 			'rem_hilit'				=> true,
 			'rem_small_words'		=> false,
-			'virtual_folder'		=> false,
+			'virtual_folder'		=> true,
 			'virtual_root'			=> false,
 			'cache_layer'			=> true,
 			'rem_ids'				=> false,
 			'redirect_404_forum'	=> false,
+			'zero_dupe'				=> array(
+				'on'			=> true,
+				'strict'		=> true,
+				'post_redir'	=> 'all',
+			),
 		);
 
 		$this->phpbb_seo->cache_config['forum_urls'] = array();
