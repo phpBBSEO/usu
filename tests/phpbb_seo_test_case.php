@@ -38,7 +38,7 @@ class phpbb_seo_test_case extends \phpbb_test_case
 	protected function setConfig($settings = array(), $forum_urls = array())
 	{
 		$this->phpbb_seo->seo_opt = array(
-			'url_rewrite'			=> false,
+			'url_rewrite'			=> true,
 			'modrtype'				=> 3,
 			'sql_rewrite'			=> false,
 			'profile_inj'			=> false,
