@@ -228,7 +228,7 @@ class core
 	* @param	string					$php_ext			PHP file extension
 	*
 	*/
-	public function __construct(\phpbb\config\config $config, \phpbb\request\request $request, \phpbb\user $user, \phpbb\auth\auth $auth, $phpbb_root_path, $php_ext)
+	public function __construct(\phpbb\config\config $config, \phpbb\request\request $request, \phpbb\user $user, \phpbb\auth\auth $auth, $phpbb_root_path, $php_ext, $use_cache = true)
 	{
 		$this->config = $config;
 		$this->request = $request;
@@ -272,7 +272,7 @@ class core
 		$this->seo_opt['cache_folder'] = PHPBB_SEO_USU_ROOT_DIR . 'cache/'; // where the cache file is stored
 
 		$this->seo_opt['topic_type'] = array(); // do not change
-		$this->cache_config['cache_enable'] = true; // do not change
+		$this->cache_config['cache_enable'] = $use_cache; // do not change
 		$this->cache_config['rem_ids'] = $this->seo_opt['rem_ids']; // do not change, set up above
 		$this->cache_config['file'] = $this->seo_opt['cache_folder'] . 'config.runtime.' . $this->php_ext;
 		$this->cache_config['cached'] = false; // do not change

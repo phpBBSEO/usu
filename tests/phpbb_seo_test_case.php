@@ -32,6 +32,6 @@ class phpbb_seo_test_case extends \phpbb_test_case
 		$user = new \phpbbseo\usu\tests\mock\user();
 		$auth = new \phpbbseo\usu\tests\mock\auth();
 
-		$this->phpbb_seo = new \phpbbseo\usu\core($config, $request, $user, $auth, $phpbb_root_path, $phpEx);
+		$this->phpbb_seo = new \phpbbseo\usu\core($config, $request, $user, $auth, $phpbb_root_path, $phpEx, false);
 	}
 }
