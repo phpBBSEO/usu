@@ -1032,7 +1032,7 @@ class usu
 			Deny from All
 		<b style="color:brown">&lt;/Files&gt;</b>
 	<b style="color:brown">&lt;/IfVersion&gt;</b>
-	<b style="color:brown">&gt;</b>IfVersion</b> <b style="color:#FF00FF">&gt;= 2.4</b><b style="color:brown">&gt;</b>
+	<b style="color:brown">&lt;IfVersion</b> <b style="color:#FF00FF">&gt;= 2.4</b><b style="color:brown">&gt;</b>
 		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
 			Require all denied
 		<b style="color:brown">&lt;/Files&gt;</b>
