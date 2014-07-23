@@ -226,6 +226,7 @@ class core
 	* @param	\phpbb\auth\auth		$auth				Auth object
 	* @param	string					$phpbb_root_path	Path to the phpBB root
 	* @param	string					$php_ext			PHP file extension
+	* @param	boolean					$use_cache			Enable or not cache reading (for tests)
 	*
 	*/
 	public function __construct(\phpbb\config\config $config, \phpbb\request\request $request, \phpbb\user $user, \phpbb\auth\auth $auth, $phpbb_root_path, $php_ext, $use_cache = true)
