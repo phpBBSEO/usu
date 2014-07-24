@@ -18,22 +18,22 @@ namespace phpbbseo\usu;
 class pagination extends \phpbb\pagination
 {
 	/** @var \phpbbseo\usu\core */
-	private $core;
+	protected $core;
 
 	/** @var \phpbb\template\template */
-	private $template;
+	protected $template;
 
 	/** @var \phpbb\user */
-	private $user;
+	protected $user;
 
 	/** @var \phpbb\controller\helper */
-	private $helper;
+	protected $helper;
 
 	/**
 	* Current $php_ext
 	* @var string
 	*/
-	private $php_ext;
+	protected $php_ext;
 
 	/**
 	* Constructor
@@ -60,7 +60,7 @@ class pagination extends \phpbb\pagination
 	public function generate_page_link($base_url, $on_page, $start_name, $per_page)
 	{
 		$paginated = array();
-
+var_dump($base_url);
 		if (!is_string($base_url))
 		{
 			if (is_array($base_url['routes']))

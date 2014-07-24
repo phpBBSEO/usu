@@ -32,7 +32,7 @@ services:
         tags:
             - { name: event.listener }
 
-    phpbb.usu.pagination:
+    pagination:
         class: phpbbseo\usu\pagination
         arguments:
             - @phpbbseo.usu.core
