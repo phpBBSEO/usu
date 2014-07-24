@@ -60,7 +60,7 @@ class pagination extends \phpbb\pagination
 	public function generate_page_link($base_url, $on_page, $start_name, $per_page)
 	{
 		$paginated = array();
-var_dump($base_url);
+
 		if (!is_string($base_url))
 		{
 			if (is_array($base_url['routes']))
