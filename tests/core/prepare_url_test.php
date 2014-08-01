@@ -18,13 +18,13 @@ class prepare_url_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 				'type'		=> 'topic',
 				'title'		=> 'This is the topic Title',
 				'id'		=> 123,
-				'expected'	=> 'this-is-the-topic-title-t123',
+				'expected'	=> '/this-is-the-topic-title-t123',
 			),
 			array(
 				'type'		=> 'topic',
 				'title'		=> '',
 				'id'		=> 321,
-				'expected'	=> 'topic-t321',
+				'expected'	=> '/topic-t321',
 			),
 		);
 	}
@@ -34,6 +34,7 @@ class prepare_url_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 	*/
 	function test_prepare_url($type, $title, $id, $expected)
 	{
+		$this->configure();
 		$this->assertEquals($expected, $this->phpbb_seo->prepare_url($type, $title, $id));
 	}
 }

@@ -21,7 +21,22 @@ class prepare_topic_url_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 					'topic_title'	=> 'Welcome to phpBB3',
 					'topic_type'	=> POST_NORMAL,
 				),
-				'expected'		=> 'topic1',
+				'expected'		=> array(
+					1	=> '/welcome-to-phpbb3-t1',
+					2	=> '/welcome-phpbb3-t1',
+				),
+			),
+			array(
+				'topic_data'	=> array(
+					'topic_id'		=> 23,
+					'forum_id'		=> 43,
+					'topic_title'	=> 'This is a global announcment',
+					'topic_type'	=> POST_GLOBAL,
+				),
+				'expected'		=> array(
+					1	=> 'announces/this-is-a-global-announcment-t23',
+					2	=> 'announces/this-global-announcment-t23',
+				),
 			),
 		);
 	}
@@ -31,6 +46,12 @@ class prepare_topic_url_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 	*/
 	function test_prepare_topic_url($topic_data, $expected)
 	{
-		$this->assertEquals($expected, $this->phpbb_seo->prepare_topic_url($topic_data));
+		$this->configure();
+		$this->assertEquals($expected[1], $this->phpbb_seo->prepare_topic_url($topic_data));
+
+		$this->configure(array(
+			'rem_small_words' => true,
+		));
+		$this->assertEquals($expected[2], $this->phpbb_seo->prepare_topic_url($topic_data));
 	}
 }

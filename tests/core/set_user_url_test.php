@@ -31,18 +31,19 @@ class set_user_url_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 	*/
 	function test_set_user_url($username, $user_id, $expected)
 	{
+		$this->configure();
 		$this->phpbb_seo->set_user_url($username, $user_id);
 		$this->assertEquals($expected[0], $this->phpbb_seo->seo_url['user'][$user_id]);
 
 		unset($this->phpbb_seo->seo_url['user'][$user_id]);
 
-		$this->setConfig(array('profile_inj' => true));
+		$this->configure(array('profile_inj' => true));
 		$this->phpbb_seo->set_user_url($username, $user_id);
 		$this->assertEquals($expected[1], $this->phpbb_seo->seo_url['user'][$user_id]);
 
 		unset($this->phpbb_seo->seo_url['user'][$user_id]);
 
-		$this->setConfig(array('profile_inj' => true, 'profile_noids' => true));
+		$this->configure(array('profile_inj' => true, 'profile_noids' => true));
 		$this->phpbb_seo->set_user_url($username, $user_id);
 		$this->assertEquals($expected[2], $this->phpbb_seo->seo_url['user'][$user_id]);
 	}

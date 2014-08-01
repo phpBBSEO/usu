@@ -39,6 +39,7 @@ class format_url_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 	*/
 	function test_format_url($case, $expected, $type = 'topic')
 	{
+		$this->configure();
 		$this->assertEquals($expected, $this->phpbb_seo->format_url($case, $type));
 	}
 }
