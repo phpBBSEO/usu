@@ -50,7 +50,7 @@ class phpbb_seo_test_case extends \phpbb_test_case
 		$tc_settings = $settings;
 		$tc_forum_urls = $forum_urls;
 
-		$this->phpbb_seo = new \phpbbseo\usu\tests\core($config, $request, $user, $auth, $phpbb_root_path, $phpEx, false);
+		$this->phpbb_seo = new \phpbbseo\usu\tests\core($config, $request, $user, $auth, $phpbb_root_path, $phpEx);
 
 		return $this->phpbb_seo;
 	}
