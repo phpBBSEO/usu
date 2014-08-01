@@ -314,7 +314,7 @@ class listener implements EventSubscriberInterface
 
 				break;
 			case 'memberlist':
-				if ($this->is_set('un'))
+				if ($this->request->is_set('un'))
 				{
 					$un = rawurldecode($this->request->variable('un', '', true));
 
