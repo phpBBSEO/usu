@@ -66,15 +66,15 @@ class listener implements EventSubscriberInterface
 	/**
 	* Constructor
 	*
-	* @param \phpbbseo\usu\core					$core
+	* @param \phpbbseo\usu\core				$core
 	* @param \phpbb\config\config				$config				Config object
-	* @param \phpbb\auth\auth					$auth				Auth object
+	* @param \phpbb\auth\auth				$auth				Auth object
 	* @param \phpbb\template\template			$template			Template object
-	* @param \phpbb\user						$user				User object
+	* @param \phpbb\user					$user				User object
 	* @param \phpbb\request\request				$request			Request object
-	* @param \phpbb\db\driver\driver_interface	$db					Database object
-	* @param string								$phpbb_root_path	Path to the phpBB root
-	* @param string								$php_ext			PHP file extension
+	* @param \phpbb\db\driver\driver_interface		$db				Database object
+	* @param string						$phpbb_root_path		Path to the phpBB root
+	* @param string						$php_ext			PHP file extension
 	*
 	*/
 	public function __construct(\phpbbseo\usu\core $core, \phpbb\config\config $config, \phpbb\auth\auth $auth, \phpbb\template\template $template, \phpbb\user $user, \phpbb\request\request $request, \phpbb\db\driver\driver_interface $db, $phpbb_root_path, $php_ext)
@@ -93,17 +93,17 @@ class listener implements EventSubscriberInterface
 	public static function getSubscribedEvents()
 	{
 		return array(
-			'core.common'						=> 'core_common',
-			'core.page_header_after'			=> 'core_page_header_after',
-			'core.page_footer'					=> 'core_page_footer',
-			'core.user_setup'					=> 'core_user_setup',
+			'core.common'				=> 'core_common',
+			'core.page_header_after'		=> 'core_page_header_after',
+			'core.page_footer'			=> 'core_page_footer',
+			'core.user_setup'			=> 'core_user_setup',
 			'core.viewforum_modify_topicrow'	=> 'core_viewforum_modify_topicrow',
 			'core.viewtopic_modify_page_title'	=> 'core_viewtopic_modify_page_title',
 			'core.viewtopic_modify_post_row'	=> 'core_viewtopic_modify_post_row',
 			'core.memberlist_view_profile'		=> 'core_memberlist_view_profile',
 			'core.modify_username_string'		=> 'core_modify_username_string',
-			'core.append_sid'					=> 'core_append_sid',
-			'core.submit_post_end'				=> 'core_submit_post_end',
+			'core.append_sid'			=> 'core_append_sid',
+			'core.submit_post_end'			=> 'core_submit_post_end',
 			'core.posting_modify_template_vars'	=> 'core_posting_modify_template_vars',
 		);
 	}
