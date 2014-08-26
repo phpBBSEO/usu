@@ -220,12 +220,12 @@ class core
 	/**
 	* Constructor
 	*
-	* @param	\phpbb\config\config	$config				Config object
-	* @param	\phpbb\request\request	$request			Request object
-	* @param	\phpbb\user				$user				User object
+	* @param	\phpbb\config\config		$config				Config object
+	* @param	\phpbb\request\request		$request			Request object
+	* @param	\phpbb\user			$user				User object
 	* @param	\phpbb\auth\auth		$auth				Auth object
-	* @param	string					$phpbb_root_path	Path to the phpBB root
-	* @param	string					$php_ext			PHP file extension
+	* @param	string				$phpbb_root_path		Path to the phpBB root
+	* @param	string				$php_ext			PHP file extension
 	*
 	*/
 	public function __construct(\phpbb\config\config $config, \phpbb\request\request $request, \phpbb\user $user, \phpbb\auth\auth $auth, $phpbb_root_path, $php_ext)
@@ -307,7 +307,9 @@ class core
 		$server_protocol = $this->ssl['use'] ? 'https://' : 'http://';
 		$server_name = trim($this->config['server_name'], '/ ');
 		$server_port = max(0, (int) $this->config['server_port']);
-		$server_port = ($server_port && $server_port <> 80) ? ':' . $server_port : '';
+		$default_port = $this->ssl['use'] ? 443 : 80;
+
+		$server_port = $server_port && ($server_port != $default_port) ? ':' . $server_port : '';
 		$script_path = trim($this->config['script_path'], './ ');
 		$script_path = (empty($script_path)) ? '' : $script_path . '/';
 
@@ -393,16 +395,12 @@ class core
 				'viewtopic'		=> 'viewtopic',
 				'viewforum'		=> 'viewforum',
 				'index'			=> 'index',
-				'memberlist'	=> 'memberlist',
+				'memberlist'		=> 'memberlist',
 				'search'		=> $this->seo_opt['rewrite_usermsg'] ? 'search' : '',
 			),
 			$this->rewrite_method[$this->phpbb_root_path]
 		);
 
-		// This hax is required because phpBB Path helper is tricked
-		// into thinking our virtual dirs are real
-		$this->rewrite_method[$this->phpbb_root_path . '../']['viewforum'] = 'viewforum';
-		$this->rewrite_method[$this->phpbb_root_path . '../']['viewtopic'] = 'viewtopic';
 		$this->rewrite_method[$this->phpbb_root_path . 'download/']['file'] = $this->seo_opt['rewrite_files'] ? 'phpbb_files' : '';
 
 		// allow empty ext
@@ -488,6 +486,11 @@ class core
 		if ($this->seo_opt['profile_noids'] || $this->seo_opt['profile_vfolder'])
 		{
 			$this->seo_ext['user'] = trim($this->seo_ext['user'], '/') ? '/' : $this->seo_ext['user'];
+
+			// This hax is required because phpBB Path helper is tricked
+			// into thinking our virtual dirs are real
+			$this->rewrite_method[$this->phpbb_root_path . '../']['memberlist'] = 'memberlist';
+			$this->rewrite_method[$this->phpbb_root_path . '../../']['memberlist'] = 'memberlist';
 		}
 
 		$this->seo_delim['sr'] = trim($this->seo_ext['user'], '/') ? $this->seo_delim['sr'] : $this->seo_ext['user'];
@@ -496,6 +499,11 @@ class core
 		if ($this->seo_opt['virtual_folder'])
 		{
 			$this->seo_ext['forum'] = $this->seo_ext['global_announce'] = trim($this->seo_ext['forum'], '/') ? '/' : $this->seo_ext['forum'];
+
+			// This hax is required because phpBB Path helper is tricked
+			// into thinking our virtual dirs are real
+			$this->rewrite_method[$this->phpbb_root_path . '../']['viewforum'] = 'viewforum';
+			$this->rewrite_method[$this->phpbb_root_path . '../']['viewtopic'] = 'viewtopic';
 		}
 
 		// If the forum cache is not activated
@@ -1349,7 +1357,6 @@ class core
 		}
 
 		$url = str_replace('%26', '&', urldecode($url));
-		//var_dump($uri, $url);exit;
 
 		if ($this->seo_opt['zero_dupe']['do_redir'])
 		{

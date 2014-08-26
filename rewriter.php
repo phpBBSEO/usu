@@ -39,6 +39,7 @@ class rewriter
 	public function __construct(\phpbbseo\usu\core $core, \phpbb\user $user, $phpbb_root_path)
 	{
 		$this->core = $core;
+		$this->user = $user;
 		$this->phpbb_root_path = $phpbb_root_path;
 	}
 
