@@ -105,6 +105,7 @@ class listener implements EventSubscriberInterface
 			'core.append_sid'			=> 'core_append_sid',
 			'core.submit_post_end'			=> 'core_submit_post_end',
 			'core.posting_modify_template_vars'	=> 'core_posting_modify_template_vars',
+			'core.display_user_activity_modify_actives' => 'core_display_user_activity_modify_actives',
 		);
 	}
 
@@ -765,5 +766,42 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 		$page_data['S_URL'] = ($mode == 'post' || ($mode == 'edit' && $post_id == $post_data['topic_first_post_id'])) ? $this->core->url_can_edit($forum_id) : false;
 
 		$event['page_data'] = $page_data;
+	}
+
+	public function core_display_user_activity_modify_actives($event)
+	{
+
+		$active_t_row = $event['active_t_row'];
+		$active_f_row = $event['active_f_row'];
+
+		if (!empty($active_t_row))
+		{
+			$sql_array = array(
+				'SELECT'	=> 't.topic_title, t.topic_type ' . (!empty($this->core->seo_opt['sql_rewrite']) ? ', t.topic_url' : '') . ', f.forum_id, f.forum_name',
+				'FROM'		=> array(
+					TOPICS_TABLE	=> 't',
+				),
+				'LEFT_JOIN' => array(
+					array(
+						'FROM'	=> array(FORUMS_TABLE => 'f'),
+						'ON'	=> 'f.forum_id = t.forum_id',
+					),
+				),
+				'WHERE' => 't.topic_id = ' . (int) $active_t_row['topic_id']
+			);
+			$result = $this->db->sql_query($this->db->sql_build_query('SELECT', $sql_array));
+			$seo_active_t_row = $this->db->sql_fetchrow($result);
+			$this->db->sql_freeresult($result);
+			if ($seo_active_t_row) {
+				$active_t_row = array_merge($active_t_row, $seo_active_t_row);
+				$active_t_forum_id = (int) $active_t_row['forum_id'];
+				$this->core->prepare_topic_url($active_t_row);
+			}
+		}
+
+		if (!empty($active_f_row['num_posts']))
+		{
+			$this->core->set_url($active_f_row['forum_name'], $active_f_row['forum_id'], 'forum');
+		}
 	}
 }

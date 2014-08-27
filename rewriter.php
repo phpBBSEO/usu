@@ -155,7 +155,7 @@ class rewriter
 
 			return;
 		}
-		else if (@$this->core->get_vars['mode'] === 'leaders')
+		else if (@$this->core->get_vars['mode'] === 'team')
 		{
 			$this->core->url =  $this->core->seo_static['leaders'] . $this->core->seo_ext['leaders'];
 
