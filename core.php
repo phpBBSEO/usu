@@ -403,6 +403,17 @@ class core
 
 		$this->rewrite_method[$this->phpbb_root_path . 'download/']['file'] = $this->seo_opt['rewrite_files'] ? 'phpbb_files' : '';
 
+		if (
+			$this->seo_opt['virtual_folder'] ||
+			$this->seo_opt['profile_noids'] ||
+			$this->seo_opt['profile_vfolder']
+		)
+		{
+			// This hax is required because phpBB Path helper is tricked
+			// into thinking our virtual dirs are real
+			$this->helper_trick();
+		}
+
 		// allow empty ext
 		$pag_mtds = array();
 
@@ -486,11 +497,6 @@ class core
 		if ($this->seo_opt['profile_noids'] || $this->seo_opt['profile_vfolder'])
 		{
 			$this->seo_ext['user'] = trim($this->seo_ext['user'], '/') ? '/' : $this->seo_ext['user'];
-
-			// This hax is required because phpBB Path helper is tricked
-			// into thinking our virtual dirs are real
-			$this->rewrite_method[$this->phpbb_root_path . '../']['memberlist'] = 'memberlist';
-			$this->rewrite_method[$this->phpbb_root_path . '../../']['memberlist'] = 'memberlist';
 		}
 
 		$this->seo_delim['sr'] = trim($this->seo_ext['user'], '/') ? $this->seo_delim['sr'] : $this->seo_ext['user'];
@@ -499,11 +505,6 @@ class core
 		if ($this->seo_opt['virtual_folder'])
 		{
 			$this->seo_ext['forum'] = $this->seo_ext['global_announce'] = trim($this->seo_ext['forum'], '/') ? '/' : $this->seo_ext['forum'];
-
-			// This hax is required because phpBB Path helper is tricked
-			// into thinking our virtual dirs are real
-			$this->rewrite_method[$this->phpbb_root_path . '../']['viewforum'] = 'viewforum';
-			$this->rewrite_method[$this->phpbb_root_path . '../']['viewtopic'] = 'viewtopic';
 		}
 
 		// If the forum cache is not activated
@@ -534,6 +535,48 @@ class core
 			$this->seo_opt['sql_rewrite'] = false;
 			$this->seo_opt['zero_dupe']['on'] = false;
 		}
+	}
+
+	/**
+	* Of course, there should ba a better way to do that
+	* @TODO investigate if extending helper service is feasiblel
+	*/
+	public function helper_trick()
+	{
+
+		static $been_here;
+		if (!empty($been_here))
+		{
+			return;
+		}
+	/*	var_dump($this->rewrite_method);
+		$this->rewrite_method[$this->phpbb_root_path . '../']['memberlist'] = 'memberlist';
+		$this->rewrite_method[$this->phpbb_root_path . '../../']['memberlist'] = 'memberlist';
+
+		$this->rewrite_method[$this->phpbb_root_path . '../']['viewforum'] = 'viewforum';
+		$this->rewrite_method[$this->phpbb_root_path . '../../']['viewforum'] = 'viewforum';
+
+		$this->rewrite_method[$this->phpbb_root_path . '../']['viewtopic'] = 'viewtopic';
+		$this->rewrite_method[$this->phpbb_root_path . '../../']['viewtopic'] = 'viewtopic';
+		return;*/
+
+		foreach ($this->rewrite_method as $path => $method_list)
+		{
+
+			foreach ($method_list as $index => $method)
+			{
+
+				if (is_array($method) || empty($method))
+				{
+					continue;
+				}
+
+				$this->rewrite_method[$this->phpbb_root_path . '../'][$index] = $method;
+				$this->rewrite_method[$this->phpbb_root_path . '../../'][$index] = $method;
+			}
+		}
+
+		$been_here = true;
 	}
 
 	// --> URL rewriting functions <--
@@ -643,7 +686,7 @@ class core
 				}
 
 				$topic_forum_id = $topic_forum_id ? $topic_forum_id : $topic_data['forum_id'];
-				$parent_forum = $topic_data['topic_type'] == POST_GLOBAL ? $this->seo_static['global_announce'] : (!empty($this->seo_url['forum'][$topic_forum_id]) ? $this->seo_url['forum'][$topic_forum_id] : '');
+				$parent_forum = $topic_data['topic_type'] == POST_GLOBAL ? $this->seo_static['global_announce'] : (!empty($this->seo_url['forum'][$topic_forum_id]) ? $this->seo_url['forum'][$topic_forum_id] : (!empty($topic_data['forum_name']) ? $phpbb_seo->set_url($topic_data['forum_name'], $topic_forum_id, 'forum') : ''));
 
 				return ($this->seo_url['topic'][$id] = sprintf($this->sftpl['topic' . ($this->modrtype > 2 ? '' : '_smpl')], $parent_forum, $this->modrtype > 2 ? $this->format_url($topic_data['topic_title'], $this->seo_static['topic']) : '', $id));
 			}

@@ -99,7 +99,7 @@ class pagination extends \phpbb\pagination
 			{
 				// in such case, rewrite as usual
 				$url_delim = (strpos($base_url, '?') === false) ? '?' : ((strpos($base_url, '?') === strlen($base_url) - 1) ? '' : '&amp;');
-				$paginated[$base_url] = $base_url . $url_delim . '%1\$s=%2\$s';
+				$paginated[$base_url] = $base_url . $url_delim . '%1$s=%2$s';
 			}
 			else
 			{
