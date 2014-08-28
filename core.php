@@ -124,40 +124,42 @@ class core
 	* seo suffixes
 	*/
 	public $seo_ext = array(
-		'forum'				=> '.html',
-		'topic'				=> '.html',
-		'post'				=> '.html',
-		'user'				=> '.html',
-		'group'				=> '.html',
-		'index'				=> '',
+		'forum'			=> '.html',
+		'topic'			=> '.html',
+		'post'			=> '.html',
+		'user'			=> '.html',
+		'group'			=> '.html',
+		'index'			=> '',
 		'global_announce'	=> '/',
-		'leaders'			=> '.html',
-		'atopic'			=> '.html',
-		'utopic'			=> '.html',
-		'npost'				=> '.html',
-		'urpost'			=> '.html',
+		'leaders'		=> '.html',
+		'atopic'		=> '.html',
+		'utopic'		=> '.html',
+		'npost'			=> '.html',
+		'urpost'		=> '.html',
 		'pagination'		=> '.html',
-		'gz_ext'			=> '',
+		'gz_ext'		=> '',
 	);
 
 	/**
 	* seo static
 	*/
 	public $seo_static = array(
-		'forum'				=> 'forum',
-		'topic'				=> 'topic',
-		'post'				=> 'post',
-		'user'				=> 'member',
-		'group'				=> 'group',
-		'index'				=> '',
+		'forum'			=> 'forum',
+		'topic'			=> 'topic',
+		'post'			=> 'post',
+		'user'			=> 'member',
+		'group'			=> 'group',
+		'index'			=> '',
 		'global_announce'	=> 'announces',
-		'leaders'			=> 'the-team',
-		'atopic'			=> 'active-topics',
-		'utopic'			=> 'unanswered',
-		'npost'				=> 'newposts',
-		'urpost'			=> 'unreadposts',
+		'leaders'		=> 'the-team',
+		'atopic'		=> 'active-topics',
+		'utopic'		=> 'unanswered',
+		'npost'			=> 'newposts',
+		'urpost'		=> 'unreadposts',
 		'pagination'		=> 'page',
-		'gz_ext'			=> '.gz',
+		'gz_ext'		=> '.gz',
+		'file_index'		=> 'resources',
+		'thumb'			=> 'thumb',
 	);
 
 	/**
@@ -175,7 +177,7 @@ class core
 	*/
 	public $seo_opt = array(
 		'url_rewrite'			=> false,
-		'modrtype'				=> 2,
+		'modrtype'			=> 2,
 		'sql_rewrite'			=> false,
 		'profile_inj'			=> false,
 		'profile_vfolder'		=> false,
@@ -186,14 +188,14 @@ class core
 		// https://github.com/phpBBSEO/usu/issues/31
 		// 'rewrite_files'			=> false,
 
-		'rem_sid'				=> false,
-		'rem_hilit'				=> true,
+		'rem_sid'			=> false,
+		'rem_hilit'			=> true,
 		'rem_small_words'		=> false,
 		'virtual_folder'		=> false,
 		'virtual_root'			=> false,
 		'cache_layer'			=> true,
-		'rem_ids'				=> false,
-		'redirect_404_forum'	=> false,
+		'rem_ids'			=> false,
+		'redirect_404_forum'		=> false,
 	);
 
 	/**
@@ -261,11 +263,8 @@ class core
 				ATTACHMENT_CATEGORY_RM			=> 'rm',
 				ATTACHMENT_CATEGORY_THUMB		=> 'image',
 				ATTACHMENT_CATEGORY_FLASH		=> 'flash',
-				ATTACHMENT_CATEGORY_QUICKTIME	=> 'qt',
+				ATTACHMENT_CATEGORY_QUICKTIME		=> 'qt',
 			);
-
-			$this->seo_static['file_index'] = 'resources';
-			$this->seo_static['thumb'] = 'thumb';
 		}
 
 		// Options that may be bypassed by the cached settings.
@@ -364,7 +363,6 @@ class core
 
 		// Let's make sure that settings are consistent
 		$this->check_config();
-		$this->seo_path['phpbb_filesR'] = $this->seo_path['phpbb_urlR'] . $this->seo_static['file_index'] . $this->seo_delim['file'];
 
 		// see if we have some custom replacement
 		if (!empty($this->url_replace))
@@ -380,7 +378,7 @@ class core
 			array(
 				'viewtopic'		=> $this->seo_path['phpbb_url'],
 				'viewforum'		=> $this->seo_path['phpbb_url'],
-				'memberlist'	=> $this->seo_path['phpbb_url'],
+				'memberlist'		=> $this->seo_path['phpbb_url'],
 				'search'		=> $this->seo_path['phpbb_url'],
 			),
 			$this->file_hbase
@@ -410,6 +408,7 @@ class core
 
 		if (!empty($this->seo_opt['rewrite_files']))
 		{
+			$this->seo_path['phpbb_filesR'] = $this->seo_path['phpbb_urlR'] . $this->seo_static['file_index'] . $this->seo_delim['file'];
 			$this->rewrite_method[$this->phpbb_root_path . 'download/']['file'] = 'phpbb_files';
 		}
 
@@ -478,7 +477,7 @@ class core
 		$this->sftpl = array_merge(
 			array(
 				'topic'			=> ($this->seo_opt['virtual_folder'] ? '%1$s/' : '') . '%2$s' . $this->seo_delim['topic'] . '%3$s',
-				'topic_smpl'	=> ($this->seo_opt['virtual_folder'] ? '%1$s/' : '') . $this->seo_static['topic'] . '%3$s',
+				'topic_smpl'		=> ($this->seo_opt['virtual_folder'] ? '%1$s/' : '') . $this->seo_static['topic'] . '%3$s',
 				'forum'			=> $this->modrtype >= 2 ? '%1$s' : $this->seo_static['forum'] . '%2$s',
 				'group'			=> $this->seo_opt['profile_inj'] ? '%2$s' . $this->seo_delim['group'] . '%3$s' : $this->seo_static['group'] . '%3$s',
 			),
@@ -559,16 +558,6 @@ class core
 		{
 			return;
 		}
-	/*	var_dump($this->rewrite_method);
-		$this->rewrite_method[$this->phpbb_root_path . '../']['memberlist'] = 'memberlist';
-		$this->rewrite_method[$this->phpbb_root_path . '../../']['memberlist'] = 'memberlist';
-
-		$this->rewrite_method[$this->phpbb_root_path . '../']['viewforum'] = 'viewforum';
-		$this->rewrite_method[$this->phpbb_root_path . '../../']['viewforum'] = 'viewforum';
-
-		$this->rewrite_method[$this->phpbb_root_path . '../']['viewtopic'] = 'viewtopic';
-		$this->rewrite_method[$this->phpbb_root_path . '../../']['viewtopic'] = 'viewtopic';
-		return;*/
 
 		foreach ($this->rewrite_method as $path => $method_list)
 		{
