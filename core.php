@@ -181,7 +181,11 @@ class core
 		'profile_vfolder'		=> false,
 		'profile_noids'			=> false,
 		'rewrite_usermsg'		=> false,
-		'rewrite_files'			=> false,
+
+		// disable attachment rewriting
+		// https://github.com/phpBBSEO/usu/issues/31
+		// 'rewrite_files'			=> false,
+
 		'rem_sid'				=> false,
 		'rem_hilit'				=> true,
 		'rem_small_words'		=> false,
@@ -247,19 +251,22 @@ class core
 		// reset the rewrite_method for $phpbb_root_path
 		$this->rewrite_method[$this->phpbb_root_path] = array();
 
-		// phpBB files must be treated a bit differently
-		$this->seo_static['file'] = array(
-			ATTACHMENT_CATEGORY_NONE		=> 'file',
-			ATTACHMENT_CATEGORY_IMAGE		=> 'image',
-			ATTACHMENT_CATEGORY_WM			=> 'wm',
-			ATTACHMENT_CATEGORY_RM			=> 'rm',
-			ATTACHMENT_CATEGORY_THUMB		=> 'image',
-			ATTACHMENT_CATEGORY_FLASH		=> 'flash',
-			ATTACHMENT_CATEGORY_QUICKTIME	=> 'qt',
-		);
+		if (!empty($this->seo_opt['rewrite_files']))
+		{
+			// phpBB files must be treated a bit differently
+			$this->seo_static['file'] = array(
+				ATTACHMENT_CATEGORY_NONE		=> 'file',
+				ATTACHMENT_CATEGORY_IMAGE		=> 'image',
+				ATTACHMENT_CATEGORY_WM			=> 'wm',
+				ATTACHMENT_CATEGORY_RM			=> 'rm',
+				ATTACHMENT_CATEGORY_THUMB		=> 'image',
+				ATTACHMENT_CATEGORY_FLASH		=> 'flash',
+				ATTACHMENT_CATEGORY_QUICKTIME	=> 'qt',
+			);
 
-		$this->seo_static['file_index'] = 'resources';
-		$this->seo_static['thumb'] = 'thumb';
+			$this->seo_static['file_index'] = 'resources';
+			$this->seo_static['thumb'] = 'thumb';
+		}
 
 		// Options that may be bypassed by the cached settings.
 		$this->cache_config['dynamic_options'] = array_keys($this->seo_opt); // Do not change
@@ -401,7 +408,10 @@ class core
 			$this->rewrite_method[$this->phpbb_root_path]
 		);
 
-		$this->rewrite_method[$this->phpbb_root_path . 'download/']['file'] = $this->seo_opt['rewrite_files'] ? 'phpbb_files' : '';
+		if (!empty($this->seo_opt['rewrite_files']))
+		{
+			$this->rewrite_method[$this->phpbb_root_path . 'download/']['file'] = 'phpbb_files';
+		}
 
 		if (
 			$this->seo_opt['virtual_folder'] ||
