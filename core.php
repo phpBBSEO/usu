@@ -1109,47 +1109,6 @@ class core
 		return $this->seo_path['uri'];
 	}
 
-	/**
-	* seo_end() : The last touch function
-	* Note : This mod is going to help your site a lot in Search Engines
-	* We request that you keep this copyright notice as specified in the licence.
-	* If You really cannot put this link, you should at least provide us with one visible
-	* (can be small but visible) link on your home page or your forum Index using this code for example :
-	* <a href="http://www.phpbb-seo.com/" title="Search Engine Optimization">phpBB SEO</a>
-	*/
-	public function seo_end($return = false)
-	{
-		if (empty($this->seo_opt['copyrights']['title']))
-		{
-			$this->seo_opt['copyrights']['title'] = strpos($this->config['default_lang'], 'fr') !== false ? 'Optimisation du R&eacute;f&eacute;rencement' : 'Search Engine Optimization';
-		}
-
-		if (empty($this->seo_opt['copyrights']['txt']))
-		{
-			$this->seo_opt['copyrights']['txt'] = 'phpBB SEO';
-		}
-
-		if ($this->seo_opt['copyrights']['img'])
-		{
-			$output = '<br /><a href="http://www.phpbb-seo.com/" title="' . $this->seo_opt['copyrights']['title'] . '"><img src="' . $this->seo_path['phpbb_url'] . 'images/phpbb-seo.png" alt="' . $this->seo_opt['copyrights']['txt'] . '"/></a>';
-		}
-		else
-		{
-			$output = '<br /><a href="http://www.phpbb-seo.com/" title="' . $this->seo_opt['copyrights']['title'] . '">' . $this->seo_opt['copyrights']['txt'] . '</a>';
-		}
-
-		if ($return)
-		{
-			return $output;
-		}
-		else
-		{
-			$this->user->lang['TRANSLATION_INFO'] .= $output;
-		}
-
-		return;
-	}
-
 	// -> Cache functions
 	/**
 	* forum_id(&$forum_id, $forum_uri = '')

@@ -4,8 +4,8 @@
 	"description": "phpBB SEO Ultimate SEO URL for phpBB 3.1",
 	"homepage": "http://www.phpbb-seo.com/",
 	"keywords": ["phpbbSEO", "extension", "seo", "USU"],
-	"version": "2.0.0-b1",
-	"time": "2014-06-12",
+	"version": "2.0.0-b2",
+	"time": "2014-09-12",
 	"license": "GPL-2.0",
 	"authors": [
 		{
@@ -28,6 +28,11 @@
 		"display-name": "phpBB SEO Ultimate SEO URL",
 		"soft-require": {
 			"phpbb/phpbb": ">=3.1.0-RC2"
+		},
+		"version-check": {
+			"host": "version.phpbb-seo.com",
+			"directory": "/",
+			"filename": "usu.json"
 		}
 	}
 }

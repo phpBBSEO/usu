@@ -17,7 +17,7 @@ class main_info
 		return array(
 			'filename'	=> '\phpbbseo\usu\acp\usu',
 			'title'		=> 'ACP_CAT_PHPBB_SEO',
-			'version'	=> '2.0.0-b1',
+			'version'	=> '2.0.0-b2',
 			'modes'		=> array(
 				'settings'	=> array(
 					'title'	=> 'ACP_PHPBB_SEO_CLASS',
@@ -36,6 +36,11 @@ class main_info
 				),
 				'extended'	=> array(
 					'title'	=> 'ACP_SEO_EXTENDED',
+					'auth'	=> 'ext_phpbbseo/usu && acl_a_board',
+					'cat'	=> array('ACP_MOD_REWRITE')
+				),
+				'sync_url'	=> array(
+					'title'	=> 'ACP_SYNC_URL',
 					'auth'	=> 'ext_phpbbseo/usu && acl_a_board',
 					'cat'	=> array('ACP_MOD_REWRITE')
 				),

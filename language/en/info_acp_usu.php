@@ -41,6 +41,7 @@ $lang = array_merge($lang, array(
 	'ACP_FORUM_URL' => 'Forum URL Management',
 	'ACP_HTACCESS' => '.htaccess',
 	'ACP_SEO_EXTENDED' => 'Extended config',
+	'ACP_SYNC_URL' => 'URL Synchronization',
 	'ACP_PREMOD_UPDATE' => '<h1>Release announcement</h1>
 	<p>This update does only concern the premod, not the phpBB core.</p>
 	<p>A new version of the phpBB SEO premod is thus available : %1$s<br/>Make sure you visit<a href="%2$s" title="The release thread"><b>the release thread</b></a> and update your installation.</p>',

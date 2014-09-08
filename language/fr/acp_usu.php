@@ -40,7 +40,7 @@ $lang = array_merge($lang, array(
 	'ACP_MOD_REWRITE'	=> 'Réécriture d’URL',
 	// ACP phpbb seo class
 	'ACP_PHPBB_SEO_CLASS' => 'Configuration de la classe phpBB SEO',
-	'ACP_PHPBB_SEO_CLASS_EXPLAIN'	=> 'Vous pouvez régler ici différentes options du mod phpBB SEO %1$s (%2$s).<br/>Les réglages par défaut comme les délimiteurs et les extensions doivent toujours être configurés dans le fichier <b>phpbb_seo/includes/setup_phpbb_seo.php</b>, les modifier implique un changement de .htaccess ainsi que des redirections appropriées.%3$s',
+	'ACP_PHPBB_SEO_CLASS_EXPLAIN'	=> 'Vous pouvez régler ici différentes options du mod phpBB SEO %1$s (%2$s).<br/>Les réglages par défaut comme les délimiteurs et les extensions doivent toujours être configurés dans le fichier <b>phpBB/ext/phpbbseo/usu/customise.php</b>, les modifier implique un changement de .htaccess ainsi que des redirections appropriées.%3$s',
 	'ACP_PHPBB_SEO_VERSION' => 'Version',
 	'ACP_PHPBB_SEO_MODE' => 'Mode',
 	'ACP_SEO_SUPPORT_FORUM' => 'Forum de support',

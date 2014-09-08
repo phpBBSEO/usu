@@ -56,7 +56,7 @@ class usu
 	function main($id, $mode)
 	{
 		global $config, $db, $user, $template, $request;
-		global $phpbb_root_path, $phpEx;
+		global $phpbb_root_path, $phpbb_admin_path, $phpEx;
 		global $phpbb_container;
 
 		$this->config = $config;
@@ -73,7 +73,9 @@ class usu
 		$action	= $this->request->variable('action', '');
 
 		$submit = $this->request->is_set_post('submit');
-		$form_key = 'acp_board';
+		$cancel = $this->request->variable('cancel', '');
+
+		$form_key = 'acp_seo_usu';
 		add_form_key($form_key);
 		$display_vars = array();
 
@@ -189,6 +191,7 @@ class usu
 				}
 
 				break;
+
 			case 'forum_url':
 				// used for cache
 				$this->write_type = 'forum';
@@ -306,6 +309,7 @@ class usu
 				}
 
 				break;
+
 			case 'htaccess':
 				$this->write_type = 'htaccess';
 				$display_vars['title'] = 'ACP_HTACCESS';
@@ -340,6 +344,7 @@ class usu
 				));
 
 				break;
+
 			case 'extended':
 				$display_vars = array(
 					'title'	=> 'ACP_SEO_EXTENDED',
@@ -414,6 +419,118 @@ class usu
 				}
 
 				$this->new_config = $this->config;
+				break;
+
+			case 'sync_url':
+				$sync_url = $this->request->variable('sync', '');
+				$redirect_url = "{$phpbb_admin_path}index.$phpEx?i=-phpbbseo-usu-acp-usu&mode=sync_url";
+				$go = max(0, $this->request->variable('go', 0));
+
+				if ($cancel || !$go)
+				{
+					trigger_error($this->user->lang['SYNC_WARN'] . '<br/><br/><b> &bull; <a href="' . append_sid($redirect_url, "go=1&amp;sync=sync") . '">' . $this->user->lang['SYNC_TOPIC_URLS'] . '</a><br/><br/> &bull; <a href="' . append_sid($redirect_url, "go=1&amp;sync=reset") . '" >' . $this->user->lang['SYNC_RESET_TOPIC_URLS'] . '</a></b>');
+				}
+
+				$starttime = microtime(true);
+				$start = max(0, $this->request->variable('start', 0));
+				$limit = max(100, $this->request->variable('limit', 0));
+
+				// Do not go over 1000 topic in a row
+				$limit = min(1000, $limit);
+
+				$poll_processed = 0;
+				$forum_data = array();
+				$url_updated = 0;
+
+				if ($sync_url === 'sync')
+				{
+					// get all forum info
+					$sql = 'SELECT forum_id, forum_name FROM ' . FORUMS_TABLE;
+					$result = $db->sql_query($sql);
+					while ($row = $db->sql_fetchrow($result))
+					{
+						$forum_data[$row['forum_id']] = $row['forum_name'];
+						$this->core->set_url($row['forum_name'], $row['forum_id'], $this->core->seo_static['forum']);
+					}
+					$db->sql_freeresult($result);
+
+					// let's work
+					$sql = 'SELECT * FROM ' . TOPICS_TABLE . '
+						ORDER BY topic_id ASC';
+					$result = $db->sql_query_limit($sql, $limit, $start);
+					while ($row = $db->sql_fetchrow($result))
+					{
+						$forum_id = (int) $row['forum_id'];
+						$topic_id = (int) $row['topic_id'];
+						$_parent = $row['topic_type'] == POST_GLOBAL ? $this->core->seo_static['global_announce'] : $this->core->seo_url['forum'][$forum_id];
+						if ( !$this->core->check_url('topic', $row['topic_url'], $_parent))
+						{
+							if (!empty($row['topic_url']))
+							{
+								// Here we get rid of the seo delim (-t) and put it back even in simple mod
+								// to be able to handle all cases at once
+								$_url = preg_replace('`' . $this->core->seo_delim['topic'] . '$`i', '', $row['topic_url']);
+								$_title = $this->core->get_url_info('topic', $_url . $this->core->seo_delim['topic'] . $topic_id, 'title');
+							}
+							else
+							{
+								$_title = $this->core->modrtype > 2 ? censor_text($row['topic_title']) : '';
+							}
+							unset($this->core->seo_url['topic'][$topic_id]);
+							$row['topic_url'] = $this->core->get_url_info('topic', $this->core->prepare_url( 'topic', $_title, $topic_id, $_parent, (( empty($_title) || ($_title == $this->core->seo_static['topic']) ) ? true : false) ), 'url');
+							unset($this->core->seo_url['topic'][$topic_id]);
+							if ($row['topic_url'])
+							{
+								// Update the topic_url field for later re-use
+								$sql = "UPDATE " . TOPICS_TABLE . " SET topic_url = '" . $db->sql_escape($row['topic_url']) . "'
+									WHERE topic_id = $topic_id";
+								$db->sql_query($sql);
+								$url_updated++;
+							}
+						}
+					}
+					$db->sql_freeresult($result);
+					$sql = 'SELECT count(topic_id) as topic_cnt FROM ' . TOPICS_TABLE;
+					$result = $db->sql_query($sql);
+					$cnt = $db->sql_fetchrow($result);
+					$db->sql_freeresult($result);
+					if ($cnt['topic_cnt'] > ($start + $limit))
+					{
+						$endtime = microtime(true);
+						$duration = $endtime - $starttime;
+						$speed = round($limit/$duration, 2);
+						$percent = round((($start + $limit) / $cnt['topic_cnt']) * 100, 2);
+						$message = sprintf($user->lang['SYNC_PROCESSING'], $percent, ($start + $limit), $cnt['topic_cnt'], $limit, $speed, round($duration, 2) , round((($cnt['topic_cnt'] - $start)/$speed)/60, 2));
+						if ($url_updated)
+						{
+							$message.= sprintf($user->lang['SYNC_ITEM_UPDATED'], '<br/>' . $url_updated);
+						}
+						$new_limit = ($duration < 10) ? $limit + 50 : $limit - 10;
+						meta_refresh(1, append_sid($redirect_url, 'go=1&amp;start=' . ($start + $limit) . "&amp;limit=$new_limit&amp;sync=sync"));
+						trigger_error("$message<br/>");
+					}
+					else
+					{
+						trigger_error($user->lang['SYNC_COMPLETE'] . sprintf($user->lang['RETURN_INDEX'], '<br/><br/><a href="' . append_sid($redirect_url) . '" >', '</a>'));
+					}
+				}
+				elseif ($sync_url === 'reset')
+				{
+					if (confirm_box(true))
+					{
+						$sql = "UPDATE " . TOPICS_TABLE . " SET topic_url = ''";
+						$db->sql_query($sql);
+						trigger_error($user->lang['SYNC_RESET_COMPLETE'] . '<br/><br/><b> &bull; <a href="' . append_sid($redirect_url, "go=1&amp;sync=sync") . '">' . $user->lang['SYNC_TOPIC_URLS'] . '</a><br/><br/> &bull; ' . sprintf($user->lang['RETURN_INDEX'], '<a href="' . append_sid($redirect_url) . '" >', '</a></b>'));
+					}
+					else
+					{
+						confirm_box(false, $user->lang['CONFIRM_OPERATION'], build_hidden_fields(array('go' => '1', 'sync' => 'reset')), 'confirm_body.html');
+					}
+				}
+				else
+				{
+					trigger_error($user->lang['SYNC_WARN'] . '<br/><br/><b> &bull; <a href="' . append_sid($redirect_url, "go=1&amp;sync=sync") . '">' . $user->lang['SYNC_TOPIC_URLS'] . '</a><br/><br/> &bull; <a href="' . append_sid($redirect_url, "go=1&amp;sync=reset") . '" >' . $user->lang['SYNC_RESET_TOPIC_URLS'] . '</a></b>');
+				}
 				break;
 			default:
 				trigger_error('NO_MODE', E_USER_ERROR);
@@ -600,7 +717,7 @@ class usu
 							$db_tools->sql_column_add(TOPICS_TABLE, 'topic_url', array('VCHAR:255', ''));
 						}
 
-						$additional_notes = sprintf($this->user->lang['SYNC_TOPIC_URL_NOTE'], '<a href="' . $this->core->seo_path['phpbb_url'] . 'phpbb_seo/sync_url.' . $this->php_ext . '" onclick="window.open(this.href); return false;">', '</a>');
+						$additional_notes = sprintf($this->user->lang['SYNC_TOPIC_URL_NOTE'], '<a href="' . append_sid("{$phpbb_admin_path}index.$phpEx", 'i=-phpbbseo-usu-acp-usu&amp;mode=sync_url') . '">', '</a>');
 
 						if ($db_tools->db->get_sql_error_triggered())
 						{
@@ -670,8 +787,6 @@ class usu
 
 		$this->tpl_name = 'acp_board';
 		$this->page_title = $display_vars['title'];
-
-		$this->core->seo_end();
 
 		$l_title_explain = $this->user->lang[$display_vars['title'] . '_EXPLAIN'];
 

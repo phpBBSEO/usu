@@ -40,7 +40,7 @@ $lang = array_merge($lang, array(
 	'ACP_MOD_REWRITE'	=> 'URL Rewriting settings',
 	// ACP phpBB seo class
 	'ACP_PHPBB_SEO_CLASS'	=> 'phpBB SEO Class settings',
-	'ACP_PHPBB_SEO_CLASS_EXPLAIN'	=> 'Here you can set up various options of the phpBB SEO %1$s mod (%2$s).<br/>The various default settings such as the delimiters and suffixes still must be set up in <b>phpbb_seo/includes/setup_phpbb_seo.php</b>, since changing these implies an .htaccess update and most likely appropriate redirections.%3$s',
+	'ACP_PHPBB_SEO_CLASS_EXPLAIN'	=> 'Here you can set up various options of the phpBB SEO %1$s mod (%2$s).<br/>The various default settings such as the delimiters and suffixes still must be set up in <b>phpBB/ext/phpbbseo/usu/customise.php</b>, since changing these implies an .htaccess update and most likely appropriate redirections.%3$s',
 	'ACP_PHPBB_SEO_VERSION' => 'Version',
 	'ACP_PHPBB_SEO_MODE' => 'Mode',
 	'ACP_SEO_SUPPORT_FORUM' => 'Support Forum',
