@@ -41,6 +41,7 @@ $lang = array_merge($lang, array(
 	'ACP_FORUM_URL' => 'Configuration des URLs des forums',
 	'ACP_HTACCESS' => '.htaccess',
 	'ACP_SEO_EXTENDED' => 'Configuration additionnelle',
+	'ACP_SYNC_URL' => 'Synchronisation des URLs',
 	'ACP_PREMOD_UPDATE' => '<h1>Annonce de mise à jour</h1>
 	<p>Cette mise à jour ne concerne que la premod, pas phpBB lui même.</p>
 	<p>Une nouvelle version de la premod phpBB SEO est donc disponible : %1$s<br/>Veuillez vous rendre sur <a href="%2$s" title="Le sujet de mise à disposition"><b>le sujet de mise à disposition</b></a> pour procéder à la mise à jour.</p>',
