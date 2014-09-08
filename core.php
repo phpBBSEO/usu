@@ -196,6 +196,7 @@ class core
 		'cache_layer'			=> true,
 		'rem_ids'			=> false,
 		'redirect_404_forum'		=> false,
+		'redirect_404_topic'		=> false,
 	);
 
 	/**

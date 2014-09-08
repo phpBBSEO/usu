@@ -181,6 +181,14 @@ class listener implements EventSubscriberInterface
 
 				if (empty($topic_data))
 				{
+					if ($this->core->seo_opt['redirect_404_topic'])
+					{
+						$this->core->seo_redirect($this->core->seo_path['phpbb_url']);
+					}
+					else
+					{
+						send_status_line(404, 'Not Found');
+					}
 					return;
 				}
 
@@ -198,6 +206,7 @@ class listener implements EventSubscriberInterface
 					}
 					else
 					{
+						$this->core->set_url($topic_data['forum_name'], $forum_id, 'forum');
 						$_parent = $this->core->seo_url['forum'][$topic_data['forum_id']];
 					}
 
