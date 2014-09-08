@@ -514,7 +514,7 @@ class usu
 						trigger_error($user->lang['SYNC_COMPLETE'] . sprintf($user->lang['RETURN_INDEX'], '<br/><br/><a href="' . append_sid($redirect_url) . '" >', '</a>'));
 					}
 				}
-				elseif ($sync_url === 'reset')
+				else if ($sync_url === 'reset')
 				{
 					if (confirm_box(true))
 					{
