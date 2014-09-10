@@ -475,7 +475,7 @@ class core
 		// $1 parent : string/
 		// $2 title / url : topic-title / forum-url-fxx
 		// $3 id
-		$this->sftpl = array_merge(
+		$this->sftpl = array_replace(
 			array(
 				'topic'			=> ($this->seo_opt['virtual_folder'] ? '%1$s/' : '') . '%2$s' . $this->seo_delim['topic'] . '%3$s',
 				'topic_smpl'		=> ($this->seo_opt['virtual_folder'] ? '%1$s/' : '') . $this->seo_static['topic'] . '%3$s',
@@ -608,10 +608,29 @@ class core
 	{
 		if (empty($this->seo_url[$type][$id]))
 		{
-			return ($this->seo_url[$type][$id] = !empty($this->cache_config[$type . '_urls'][$id]) ? $this->cache_config[$type . '_urls'][$id] : sprintf($this->sftpl[$type], $parent, $this->format_url($url, $this->seo_static[$type]) . $this->seo_delim[$type] . $id, $id));
+			return ($this->seo_url[$type][$id] = !empty($this->cache_config[$type . '_urls'][$id]) ? $this->cache_config[$type . '_urls'][$id] : sprintf($this->sftpl[$type], $this->format_url($url, $this->seo_static[$type]) . $this->seo_delim[$type] . $id, $id));
 		}
 
 		return $this->seo_url[$type][$id];
+	}
+
+	/**
+	* set_parent_urls(array & $forum_data)
+	* set/check urls of current forum's parent(s)
+	*/
+	public function set_parent_urls(&$forum_data)
+	{
+		if (!empty($forum_data['forum_parents']))
+		{
+			$forum_parents = @unserialize($forum_data['forum_parents']);
+			if (!empty($forum_parents))
+			{
+				foreach ($forum_parents as $fid => $data)
+				{
+					$this->set_url($data[0], $fid, 'forum');
+				}
+			}
+		}
 	}
 
 	/**

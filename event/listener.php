@@ -93,19 +93,19 @@ class listener implements EventSubscriberInterface
 	public static function getSubscribedEvents()
 	{
 		return array(
-			'core.common'				=> 'core_common',
-			'core.page_header_after'		=> 'core_page_header_after',
-			'core.page_footer'			=> 'core_page_footer',
-			'core.user_setup'			=> 'core_user_setup',
-			'core.viewforum_modify_topicrow'	=> 'core_viewforum_modify_topicrow',
-			'core.viewtopic_modify_page_title'	=> 'core_viewtopic_modify_page_title',
-			'core.viewtopic_modify_post_row'	=> 'core_viewtopic_modify_post_row',
-			'core.memberlist_view_profile'		=> 'core_memberlist_view_profile',
-			'core.modify_username_string'		=> 'core_modify_username_string',
-			'core.append_sid'			=> 'core_append_sid',
-			'core.submit_post_end'			=> 'core_submit_post_end',
-			'core.posting_modify_template_vars'	=> 'core_posting_modify_template_vars',
-			'core.display_user_activity_modify_actives' => 'core_display_user_activity_modify_actives',
+			'core.common'					=> 'core_common',
+			'core.page_header_after'			=> 'core_page_header_after',
+			'core.page_footer'				=> 'core_page_footer',
+			'core.user_setup'				=> 'core_user_setup',
+			'core.viewforum_modify_topicrow'		=> 'core_viewforum_modify_topicrow',
+			'core.viewtopic_modify_page_title'		=> 'core_viewtopic_modify_page_title',
+			'core.viewtopic_modify_post_row'		=> 'core_viewtopic_modify_post_row',
+			'core.memberlist_view_profile'			=> 'core_memberlist_view_profile',
+			'core.modify_username_string'			=> 'core_modify_username_string',
+			'core.append_sid'				=> 'core_append_sid',
+			'core.submit_post_end'				=> 'core_submit_post_end',
+			'core.posting_modify_template_vars'		=> 'core_posting_modify_template_vars',
+			'core.display_user_activity_modify_actives'	=> 'core_display_user_activity_modify_actives',
 		);
 	}
 
@@ -138,7 +138,11 @@ class listener implements EventSubscriberInterface
 						$this->request->overwrite('start', $this->start);
 					}
 
+					$this->forum_id = max(0, (int) $forum_data['forum_id']);
+					$this->core->prepare_forum_url($forum_data);
 					$this->core->seo_path['canonical'] = $this->core->drop_sid(append_sid("{$this->phpbb_root_path}viewforum.{$this->php_ext}", "f={$this->forum_id}&amp;start={$this->start}"));
+
+					$this->core->set_parent_urls($forum_data);
 
 					$default_sort_days = (!empty($user_data['user_topic_show_days'])) ? $user_data['user_topic_show_days'] : 0;
 					$default_sort_key = (!empty($user_data['user_topic_sortby_type'])) ? $user_data['user_topic_sortby_type'] : 't';
@@ -152,7 +156,7 @@ class listener implements EventSubscriberInterface
 
 					$this->core->seo_opt['zero_dupe']['redir_def'] = array(
 						'hash'		=> array('val' => $this->request->variable('hash', ''), 'keep' => $keep_mark),
-						'f'			=> array('val' => $this->forum_id, 'keep' => true, 'force' => true),
+						'f'		=> array('val' => $this->forum_id, 'keep' => true, 'force' => true),
 						'st'		=> array('val' => $sort_days, 'keep' => true),
 						'sk'		=> array('val' => $sort_key, 'keep' => true),
 						'sd'		=> array('val' => $sort_dir, 'keep' => true),
@@ -176,6 +180,7 @@ class listener implements EventSubscriberInterface
 				}
 
 				break;
+
 			case 'viewtopic':
 				global $topic_data, $topic_replies, $forum_id, $post_id, $view; // god save the hax
 
@@ -195,6 +200,8 @@ class listener implements EventSubscriberInterface
 				$this->topic_id = $topic_id = (int) $topic_data['topic_id'];
 				$this->forum_id = $forum_id;
 
+				$this->core->set_parent_urls($topic_data);
+
 				if (!empty($topic_data['topic_url']) || (isset($topic_data['topic_url']) && !empty($this->core->seo_opt['sql_rewrite'])))
 				{
 					if ($topic_data['topic_type'] == POST_GLOBAL)
@@ -206,8 +213,8 @@ class listener implements EventSubscriberInterface
 					}
 					else
 					{
-						$this->core->set_url($topic_data['forum_name'], $forum_id, 'forum');
-						$_parent = $this->core->seo_url['forum'][$topic_data['forum_id']];
+						$this->core->prepare_forum_url($topic_data);
+						$_parent = $this->core->seo_url['forum'][$forum_id];
 					}
 
 					if (!$this->core->check_url('topic', $topic_data['topic_url'], $_parent))
@@ -323,6 +330,7 @@ class listener implements EventSubscriberInterface
 				}
 
 				break;
+
 			case 'memberlist':
 				if ($this->request->is_set('un'))
 				{
@@ -376,6 +384,7 @@ class listener implements EventSubscriberInterface
 				}
 
 				break;
+
 			case 'viewtopic':
 				$this->forum_id = max(0, $this->request->variable('f', 0));
 				$this->topic_id = max(0, $this->request->variable('t', 0));
