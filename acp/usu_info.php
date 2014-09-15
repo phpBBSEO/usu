@@ -29,18 +29,18 @@ class main_info
 					'auth'	=> 'ext_phpbbseo/usu && acl_a_board',
 					'cat'	=> array('ACP_MOD_REWRITE')
 				),
-				'htaccess'	=> array(
-					'title'	=> 'ACP_HTACCESS',
-					'auth'	=> 'ext_phpbbseo/usu && acl_a_board',
-					'cat'	=> array('ACP_MOD_REWRITE')
-				),
-				'extended'	=> array(
-					'title'	=> 'ACP_SEO_EXTENDED',
+				'server'	=> array(
+					'title'	=> 'ACP_REWRITE_CONF',
 					'auth'	=> 'ext_phpbbseo/usu && acl_a_board',
 					'cat'	=> array('ACP_MOD_REWRITE')
 				),
 				'sync_url'	=> array(
 					'title'	=> 'ACP_SYNC_URL',
+					'auth'	=> 'ext_phpbbseo/usu && acl_a_board',
+					'cat'	=> array('ACP_MOD_REWRITE')
+				),
+				'extended'	=> array(
+					'title'	=> 'ACP_SEO_EXTENDED',
 					'auth'	=> 'ext_phpbbseo/usu && acl_a_board',
 					'cat'	=> array('ACP_MOD_REWRITE')
 				),

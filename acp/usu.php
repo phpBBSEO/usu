@@ -48,7 +48,6 @@ class usu
 	var $array_type_cfg = array();
 	var $multiple_options = array();
 	var $modrtype_lang = array();
-	var $write_type = 'forum';
 	var $lengh_limit = 20;
 	var $word_limit = 3;
 	var $seo_unset_opts = array();
@@ -136,7 +135,6 @@ class usu
 		switch ($mode)
 		{
 			case 'settings':
-				$this->write_type = 'forum';
 				$display_vars['title'] = 'ACP_PHPBB_SEO_CLASS';
 				$this->user->lang['ACP_PHPBB_SEO_CLASS_EXPLAIN'] = sprintf($this->user->lang['ACP_PHPBB_SEO_CLASS_EXPLAIN'], $this->modrtype_lang['ulink'], $this->modrtype_lang['uforumlink'], '</p><hr/><p><b>' . $this->user->lang['ACP_PHPBB_SEO_MODE'] . ' : ' . $this->modrtype_lang['link'] . ' - ( ' . $this->modrtype_lang['forumlink'] . ' )</b></p><hr/><p>');
 				$display_vars['vars'] = array();
@@ -193,8 +191,6 @@ class usu
 				break;
 
 			case 'forum_url':
-				// used for cache
-				$this->write_type = 'forum';
 
 				$forbidden = array(
 					$this->core->seo_static['forum'],
@@ -310,13 +306,17 @@ class usu
 
 				break;
 
-			case 'htaccess':
-				$this->write_type = 'htaccess';
-				$display_vars['title'] = 'ACP_HTACCESS';
-				$this->user->lang['ACP_HTACCESS_EXPLAIN'] .= '</p><hr/><p><b>' . $this->user->lang['ACP_PHPBB_SEO_VERSION'] . ' : ' . $this->modrtype_lang['link'] . ' - ( ' . $this->modrtype_lang['forumlink'] . ' )</b></p><p>';
+			case 'server':
+
+				$display_vars['title'] = 'ACP_REWRITE_CONF';
+				$this->user->lang['ACP_REWRITE_CONF_EXPLAIN'] .= '</p><hr/><p><b>' . $this->user->lang['ACP_PHPBB_SEO_VERSION'] . ' : ' . $this->modrtype_lang['link'] . ' - ( ' . $this->modrtype_lang['forumlink'] . ' )</b></p><p>';
 				$display_vars['vars'] = array();
-				$display_vars['vars']['legend1'] = 'ACP_HTACCESS';
-				$display_vars['vars']['save'] = array('lang' => 'SEO_HTACCESS_SAVE', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
+				$display_vars['vars']['legend1'] = 'ACP_REWRITE_CONF';
+				if ($this->core->seo_path['phpbb_script'] && !$this->core->seo_opt['virtual_root'])
+				{
+					$display_vars['vars']['rbase'] = array('lang' => 'SEO_SERVER_CONF_RBASE', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
+				}
+				$display_vars['vars']['save'] = array('lang' => 'SEO_SERVER_CONF_SAVE', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
 				$display_vars['vars']['more_options'] = array('lang' => 'SEO_MORE_OPTION', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
 				$this->new_config['save'] = false;
 				$cfg_array = ($this->request->is_set('config')) ? utf8_normalize_nfc($this->request->variable('config', array('' => ''), true)) : $this->new_config;
@@ -325,19 +325,14 @@ class usu
 				$this->new_config['wslash'] = isset($cfg_array['wslash']) ? $cfg_array['wslash'] : false;
 				$this->new_config['rbase'] = isset($cfg_array['rbase']) ? $cfg_array['rbase'] : false;
 
-				if ($this->core->seo_path['phpbb_script'] && !$this->core->seo_opt['virtual_root'])
-				{
-					$display_vars['vars']['rbase'] = array('lang' => 'SEO_HTACCESS_RBASE', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
-				}
-
 				if ($this->new_config['more_options'])
 				{
-					$display_vars['vars']['slash'] = array('lang' => 'SEO_HTACCESS_SLASH', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
-					$display_vars['vars']['wslash'] = array('lang' => 'SEO_HTACCESS_WSLASH', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
+					$display_vars['vars']['slash'] = array('lang' => 'SEO_SERVER_CONF_SLASH', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
+					$display_vars['vars']['wslash'] = array('lang' => 'SEO_SERVER_CONF_WSLASH', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true);
 				}
 
 				// Dirty yet simple templating
-				$this->user->lang['ACP_HTACCESS_EXPLAIN'] .= $this->seo_htaccess();
+				$this->user->lang['ACP_REWRITE_CONF_EXPLAIN'] .= $this->seo_server_conf();
 
 				$this->template->assign_vars(array(
 					'S_SEO_HTACCESS'	=> 1,
@@ -742,11 +737,11 @@ class usu
 
 		if ($submit)
 		{
-			if ($mode == 'htaccess')
+			if ($mode == 'server')
 			{
 				if ($this->new_config['save'])
 				{
-					$this->write_cache($this->write_type);
+					$this->seo_server_conf(false);
 
 					add_log('admin', 'SEO_LOG_CONFIG_' . strtoupper($mode));
 				}
@@ -759,11 +754,17 @@ class usu
 			}
 			else
 			{
-				if ($this->write_cache($this->write_type))
+				// config
+				$file = $this->core->cache_config['file'];
+				ksort($this->core->cache_config['forum_urls']);
+
+				$update = '<'.'?php' . "\n" . '/**' . "\n" . '* phpBB SEO' . "\n" . '* www.phpBB-SEO.com' . "\n" . '* @package phpBB SEO USU' . "\n" . '*/' . "\n" . 'if (!defined(\'IN_PHPBB\')) {' . "\n\t" . 'exit;' . "\n" . '}' . "\n";
+				$update .= '$settings = ' . preg_replace('`[\s]+`', ' ', var_export($this->core->cache_config['settings'], true)) . ';'. "\n";
+				$update .= '$forum_urls = ' . preg_replace('`[\s]+`', ' ', var_export($this->core->cache_config['forum_urls'], true)) . ';';
+
+				if ($this->write_cache($file, $update))
 				{
 					global $msg_long_text;
-
-					ksort($this->core->cache_config[$this->write_type]);
 
 					add_log('admin', 'SEO_LOG_CONFIG_' . strtoupper($mode));
 
@@ -792,7 +793,7 @@ class usu
 
 		if ($mode != 'extended')
 		{
-			$l_title_explain .= $mode == 'htaccess' ? '' : $this->check_cache_folder($this->core->seo_opt['cache_folder']);
+			$l_title_explain .= $mode == 'server' ? '' : $this->check_cache_folder($this->core->seo_opt['cache_folder']);
 		}
 
 		$this->template->assign_vars(array(
@@ -932,357 +933,531 @@ class usu
 	}
 
 	/**
-	*  seo_htaccess The evil one ;-)
+	*  seo_server_conf The evil one ;-)
 	*/
-	function seo_htaccess($html = true)
+	function seo_server_conf($html = true)
 	{
-		$htaccess_code = '';
-		$htaccess_tpl = '';
+		// get mods server_conf tpls
+		$mods_ht = $this->get_mods_server_conf();
+		$default_slash = '/';
+		$wierd_slash = '';
+		$phpbb_path = trim($this->core->seo_path['phpbb_script'], '/');
+		$show_rewritebase_opt = false;
+		$rewritebase = '';
+		$wierd_slash = $this->new_config['wslash'] ? '/' : '';
+		$default_slash = $this->new_config['slash'] ? '' : '/';
 
-		if (empty($htaccess_code))
+		$red_slash = '<b style="color:red">/</b>';
+
+		if (!empty($phpbb_path))
 		{
-			// get mods .htaccess tpls
-			$mods_ht = $this->get_mods_ht();
-			$default_slash = '/';
-			$wierd_slash = '';
-			$phpbb_path = trim($this->core->seo_path['phpbb_script'], '/');
-			$show_rewritebase_opt = false;
-			$rewritebase = '';
-			$wierd_slash = $this->new_config['wslash'] ? '<b style="color:red">/</b>' : '';
-			$default_slash = $this->new_config['slash'] ? '' : '/';
+			$phpbb_path = $phpbb_path . '/';
 
-			if (!empty($phpbb_path))
+			if ($this->new_config['rbase'])
 			{
-				$phpbb_path = $phpbb_path . '/';
-
-				if ($this->new_config['rbase'])
-				{
-					$rewritebase = $phpbb_path;
-					$default_slash = $this->new_config['slash'] ? '/' : '';
-				}
-
-				$rewritebase = $this->new_config['rbase'] ? $phpbb_path : '';
-				$show_rewritebase_opt = $this->core->seo_opt['virtual_root'] ? false : true;
+				$rewritebase = $phpbb_path;
+				$default_slash = $this->new_config['slash'] ? '/' : '';
 			}
 
-			$colors = array(
-				'color'		=> '<b style="color:%1$s">%2$s</b>',
-				'static'	=> '#A020F0',
-				'ext'		=> '#6A5ACD',
-				'delim'		=> '#FF00FF',
-			);
+			$show_rewritebase_opt = $this->core->seo_opt['virtual_root'] ? false : true;
+		}
 
-			$tpl = array(
-				'paginpage'	=> '/?(<b style="color:' . $colors['static'] . '">%1$s</b>([0-9]+)<b style="color:' . $colors['ext'] . '">%2$s</b>)?',
-				'pagin'		=> '(<b style="color:' . $colors['delim'] . '">%1$s</b>([0-9]+))?<b style="color:' . $colors['ext'] . '">%2$s</b>',
-				'static'	=> sprintf($colors['color'] , $colors['static'], '%1$s'),
-				'ext'		=> sprintf($colors['color'] , $colors['ext'], '%1$s'),
-				'delim'		=> sprintf($colors['color'] , $colors['delim'], '%1$s'),
-			);
+		$colors = array(
+			'color'		=> '<b style="color:%1$s">%2$s</b>',
+			'static'	=> '#A020F0',
+			'ext'		=> '#6A5ACD',
+			'delim'		=> '#FF00FF',
+		);
 
-			$modrtype = array(
-				1		=> 'SIMPLE',
-				2		=> 'MIXED',
-				1		=> 'SIMPLE',
-				3		=> 'ADVANCED',
-				'type'	=> intval($this->core->modrtype),
-			);
+		$spritf_tpl = array(
+			'paginpage'	=> '/?(<b style="color:' . $colors['static'] . '">%1$s</b>([0-9]+)<b style="color:' . $colors['ext'] . '">%2$s</b>)?',
+			'pagin'		=> '(<b style="color:' . $colors['delim'] . '">%1$s</b>([0-9]+))?<b style="color:' . $colors['ext'] . '">%2$s</b>',
+			'static'	=> sprintf($colors['color'] , $colors['static'], '%1$s'),
+			'ext'		=> sprintf($colors['color'] , $colors['ext'], '%1$s'),
+			'delim'		=> sprintf($colors['color'] , $colors['delim'], '%1$s'),
+		);
 
-			//
-			$htaccess_tpl = '<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">mod_rewrite.c</b><b style="color:brown">&gt;</b>' . "\n\n";
+		$modrtype = array(
+			1		=> 'SIMPLE',
+			2		=> 'MIXED',
+			3		=> 'ADVANCED',
+			'type'	=> intval($this->core->modrtype),
+		);
 
-			$htaccess_tpl .= '<b style="color:blue"># You may need to un-comment the following lines' . "\n";
-			$htaccess_tpl .= '# Options +FollowSymlinks' . "\n";
-			$htaccess_tpl .= '# To make sure that rewritten dir or file (/|.html) will not load dir.php in case it exist' . "\n";
-			$htaccess_tpl .= '# Options -MultiViews' . "\n";
-			$htaccess_tpl .= '# REMEBER YOU ONLY NEED TO STARD MOD REWRITE ONCE</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteEngine</b> <b style="color:#FF00FF">On</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># Uncomment the statement below if you want to make use of' . "\n";
-			$htaccess_tpl .= '# HTTP authentication and it does not already work.' . "\n";
-			$htaccess_tpl .= '# This could be required if you are for example using PHP via Apache CGI.' . "\n";
-			$htaccess_tpl .= '# RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization},L]</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># REWRITE BASE</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteBase</b> <b>/{REWRITEBASE}</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># HERE IS A GOOD PLACE TO FORCE CANONICAL DOMAIN</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># Define fully qualified ssl aware protocol</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># RewriteCond %{SERVER_PORT}s ^(443(s)|[0-9]+s)$</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># RewriteRule ^.*$ - [env=HttpFullProto:http%2://]</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># RewriteCond %{HTTP_HOST} !^' . str_replace(array('https://', 'http://', '.'), array('', '', '\\.'), trim($this->core->seo_path['root_url'], '/ ')) . '$ [NC]</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># RewriteRule ^(.*)$ ' . str_replace(array('https://', 'http://'), '%{ENV:HttpFullProto}', $this->core->seo_path['root_url']) . '{REWRITEBASE}$1 [QSA,L,R=301]</b>' . "\n\n";
-			$htaccess_tpl .= '<b style="color:blue"># DO NOT GO FURTHER IF THE REQUESTED FILE / DIR DOES EXISTS</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} -f [OR]' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} -d' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteRule</b> . - [L]' . "\n";
-			$htaccess_tpl .= '<b style="color:blue">#####################################################' . "\n";
-			$htaccess_tpl .= '# PHPBB SEO REWRITE RULES ALL MODES' . "\n";
-			$htaccess_tpl .= '#####################################################' . "\n";
-			$htaccess_tpl .= '# AUTHOR : dcz www.phpbb-seo.com' . "\n";
-			$htaccess_tpl .= '# STARTED : 01/2006' . "\n";
-			$htaccess_tpl .= '#################################' . "\n";
-			$htaccess_tpl .= '# FORUMS PAGES' . "\n";
-			$htaccess_tpl .= '###############</b>' . "\n";
+		if (!empty($default_slash) && $this->new_config['more_options'])
+		{
+			$default_slash = $red_slash;
+		}
 
-			if (!empty($this->core->seo_static['index']))
+		if (!empty($wierd_slash) && $this->new_config['more_options'])
+		{
+			$wierd_slash = $red_slash;
+		}
+
+		// The tpl array
+		$rewrite_tpl_vars = array();
+
+		// handle the suffixes properly in RegEx
+		// set up pagination RegEx
+		// set up ext bits
+		$seo_ext = array(
+			// force '/' for both / and empty ext to add /? in RegEx (which allows both cases)
+			'pagination'	=> trim($this->core->seo_ext['pagination'], '/') ? str_replace('.', '\\.', $this->core->seo_ext['pagination']) : '/',
+		);
+
+		$reg_ex_page = sprintf($spritf_tpl['paginpage'], $this->core->seo_static['pagination'], $seo_ext['pagination'] . ($seo_ext['pagination'] === '/' ? '?' : ''));
+
+		foreach ($this->core->seo_ext as $type => $value)
+		{
+			$_value = trim($value, '/');
+			// force '/' for both / and empty ext to add /? in RegEx (which allows both cases)
+			$seo_ext[$type] = $_value ? str_replace('.', '\\.', $value) : '/';
+			$rewrite_tpl_vars['{' . strtoupper($type) . '_PAGINATION}'] = $_value ? sprintf($spritf_tpl['pagin'], $this->core->seo_delim['start'], $seo_ext[$type]) : $reg_ex_page;
+			// use url/? to allow both url and url/ to work as expected
+			$rewrite_tpl_vars['{EXT_' . strtoupper($type) . '}'] = sprintf($spritf_tpl['ext'] , $seo_ext[$type]) . ($_value ? '' : '?');
+		}
+
+		$rewrite_tpl_vars['{PAGE_PAGINATION}'] = $reg_ex_page;
+
+		// static bits
+		foreach ($this->core->seo_static as $type => $value)
+		{
+			if (!is_array($this->core->seo_static[$type]))
 			{
-				$htaccess_tpl .= '<b style="color:blue"># FORUM INDEX</b>' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_INDEX}{EXT_INDEX}$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]' . "\n";
+				$rewrite_tpl_vars['{STATIC_' . strtoupper($type) . '}'] = sprintf($spritf_tpl['static'], $this->core->seo_static[$type]);
 			}
-			else
-			{
-				$htaccess_tpl .= '<b style="color:blue"># FORUM INDEX REWRITERULE WOULD STAND HERE IF USED. "forum" REQUIRES TO BE SET AS FORUM INDEX' . "\n";
-				$htaccess_tpl .= '# RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}<b style="color:#A020F0">forum</b>\.<b style="color:#6A5ACD">html</b>$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]</b>' . "\n";
-			}
+		}
 
-			$htaccess_common_tpl = '<b style="color:blue"># PHPBB FILES ALL MODES</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_FILE_INDEX}{DELIM_FILE}[a-z0-9_-]+{DELIM_FILE}({STATIC_THUMB}{DELIM_FILE})?([0-9]+)$ {DEFAULT_SLASH}{PHPBB_RPATH}download/file.{PHP_EX}?id=$2&amp;t=$1 [QSA,L,NC]' . "\n";
+		// delim bits
+		foreach ($this->core->seo_delim as $type => $value)
+		{
+			$rewrite_tpl_vars['{DELIM_' . strtoupper($type) . '}'] = sprintf($spritf_tpl['delim'], $this->core->seo_delim[$type]);
+		}
 
-			if ($this->core->seo_opt['profile_noids'])
-			{
-				$htaccess_common_tpl .= '<b style="color:blue"># PROFILES THROUGH USERNAME</b>' . "\n";
-				$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/?$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&amp;un=$1 [QSA,L,NC]' . "\n";
-				$htaccess_common_tpl .= '<b style="color:blue"># USER MESSAGES THROUGH USERNAME</b>' . "\n";
-				$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author=$1&amp;sr=$2&amp;start=$4 [QSA,L,NC]' . "\n";
-			}
-			else
-			{
-				$htaccess_common_tpl .= '<b style="color:blue"># PROFILES ALL MODES WITH ID</b>' . "\n";
-				$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){EXT_USER}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&amp;u=$2 [QSA,L,NC]' . "\n";
-				$htaccess_common_tpl .= '<b style="color:blue"># USER MESSAGES ALL MODES WITH ID</b>' . "\n";
-				$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){DELIM_SR}(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author_id=$2&amp;sr=$3&amp;start=$5 [QSA,L,NC]' . "\n";
-			}
+		// common server_conf vars
+		$rewrite_tpl_vars += array(
+			'{REWRITEBASE}'		=> $rewritebase,
+			'{PHP_EX}'		=> $this->php_ext,
+			'{PHPBB_LPATH}'		=> ($this->new_config['rbase'] || $this->core->seo_opt['virtual_root']) ? '' : $phpbb_path,
+			'{PHPBB_RPATH}'		=> $this->new_config['rbase'] ? '' : $phpbb_path,
+			'{DEFAULT_SLASH}'	=> $default_slash,
+			'{WIERD_SLASH}'		=> $wierd_slash,
+			'{RED_SLASH}'		=> $this->new_config['more_options'] ? $red_slash : '/',
+			'{MOD_RTYPE}'		=> $modrtype[$modrtype['type']],
+		);
 
-			$htaccess_common_tpl .= '<b style="color:blue"># GROUPS ALL MODES</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_GROUP}|[a-z0-9_-]*{DELIM_GROUP})([0-9]+){GROUP_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=group&amp;g=$2&amp;start=$4 [QSA,L,NC]' . "\n";
-			$htaccess_common_tpl .= '<b style="color:blue"># POST</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_POST}([0-9]+){EXT_POST}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?p=$1 [QSA,L,NC]' . "\n";
-			$htaccess_common_tpl .= '<b style="color:blue"># ACTIVE TOPICS</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_ATOPIC}{ATOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=active_topics&amp;start=$2&amp;sr=topics [QSA,L,NC]' . "\n";
-			$htaccess_common_tpl .= '<b style="color:blue"># UNANSWERED TOPICS</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_UTOPIC}{UTOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unanswered&amp;start=$2&amp;sr=topics [QSA,L,NC]' . "\n";
-			$htaccess_common_tpl .= '<b style="color:blue"># NEW POSTS</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_NPOST}{NPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=newposts&amp;start=$2&amp;sr=topics [QSA,L,NC]' . "\n";
-			$htaccess_common_tpl .= '<b style="color:blue"># UNREAD POSTS</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_URPOST}{URPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unreadposts&amp;start=$2 [QSA,L,NC]' . "\n";
-			$htaccess_common_tpl .= '<b style="color:blue"># THE TEAM</b>' . "\n";
-			$htaccess_common_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_LEADERS}{EXT_LEADERS}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=leaders [QSA,L,NC]' . "\n";
-			$htaccess_common_tpl .= '<b style="color:blue"># HERE IS A GOOD PLACE TO ADD OTHER PHPBB RELATED REWRITERULES</b>' . "\n\n";
+		// prettify rules
+		$prettify_common = array(
+			'comments' => array(
+				'find' => array(
+					'`^(\s*)(#.*)$`m',
+					'`^(\s*)(//.*)$`m',
+					'`^(\s*)(/\*.*\*/)$`Um',
+				),
+				'replace' => '\1<b style="color:blue">\2</b>',
+			),
+			'rewrite' => array(
+				'find' => '`^(\s*)(rewrite|RewriteRule|RewriteCond|RewriteBase|RewriteEngine)`m',
+				'replace' => '\1<b style="color:green">\2</b>',
+			),
+		);
 
-			// We now handle all modes at once (simple / mixed / advanced)
-			$htaccess_tpl .= '<b style="color:blue"># FORUM ALL MODES</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?f=$2&amp;start=$4 [QSA,L,NC]' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># TOPIC WITH VIRTUAL FOLDER ALL MODES</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+)/({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?f=$2&amp;t=$4&amp;start=$6 [QSA,L,NC]' . "\n";
-		//	Not needed any more
-		//	$htaccess_tpl .= '<b style="color:blue"># GLOBAL ANNOUNCEMENTS WITH VIRTUAL FOLDER ALL MODES</b>' . "\n";
-		//	$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_GLOBAL_ANNOUNCE}{EXT_GLOBAL_ANNOUNCE}({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?t=$2&amp;start=$4 [QSA,L,NC]' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># TOPIC WITHOUT FORUM ID &amp; DELIM ALL MODES</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]*)/?({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?forum_uri=$1&amp;t=$3&amp;start=$5 [QSA,L,NC]' . "\n";
-			$htaccess_tpl .= $htaccess_common_tpl;
+		$rewrite_conf = array(
+			'apache' => array(
+				'header' => "<IfModule mod_rewrite.c>
+	# You may need to un-comment the following lines
+	# Options +FollowSymlinks
+	# To make sure that rewritten dir or file (/|.html) will not load dir.php in case it exist
+	# Options -MultiViews
+	# REMEBER YOU ONLY NEED TO STARD MOD REWRITE ONCE
+	RewriteEngine On
 
-			// mods .htaccess pos1
-			if (!empty($mods_ht['pos1']))
-			{
-				$htaccess_tpl .= $mods_ht['pos1'];
-			}
+	# Uncomment the statement below if you want to make use of
+	# HTTP authentication and it does not already work.
+	# This could be required if you are for example using PHP via Apache CGI.
+	# RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization},L]
 
-			$htaccess_tpl .= '<b style="color:blue"># FORUM WITHOUT ID &amp; DELIM ALL MODES</b>' . "\n";
+	# REWRITE BASE
+	RewriteBase /{REWRITEBASE}
 
-			if (trim($this->core->seo_ext['forum'],'/'))
-			{
-				$htaccess_tpl .= '<b style="color:blue"># THESE FOUR LINES MUST BE LOCATED AT THE END OF YOUR HTACCESS TO WORK PROPERLY</b>' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-f' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&amp;start=$3 [QSA,L,NC]' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-f' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 [QSA,L,NC]' . "\n";
-			}
-			else
-			{
-				$htaccess_tpl .= '<b style="color:blue"># THESE THREE LINES MUST BE LOCATED AT THE END OF YOUR HTACCESS TO WORK PROPERLY</b>' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-f' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-d' . "\n";
-				$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&amp;start=$3 [QSA,L,NC]' . "\n";
-			}
+	# HERE IS A GOOD PLACE TO FORCE CANONICAL DOMAIN
+	# Define fully qualified ssl aware protocol
+	# RewriteCond %{SERVER_PORT}s ^(443(s)|[0-9]+s)$
+	# RewriteRule ^.*$ - [env=HttpFullProto:http%2://]
+	# RewriteCond %{HTTP_HOST} !^" . str_replace(array('https://', 'http://', '.'), array('', '', '\\.'), trim($this->core->seo_path['root_url'], '/ ')) . "$ [NC]
+	# RewriteRule ^(.*)$ " . str_replace(array('https://', 'http://'), '%{ENV:HttpFullProto}', $this->core->seo_path['root_url']) . "{REWRITEBASE}$1 [QSA,L,R=301]
 
-			// fix for dumb clients unable to deal with base href
-			$htaccess_tpl .= '<b style="color:blue"># FIX RELATIVE PATHS : FILES</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_RPATH}.+/(style\.{PHP_EX}|ucp\.{PHP_EX}|mcp\.{PHP_EX}|faq\.{PHP_EX}|download/file.{PHP_EX})$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># FIX RELATIVE PATHS : IMAGES</b>' . "\n";
-			$htaccess_tpl .= '<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_RPATH}.+/(styles/.*|images/.*)/$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]' . "\n";
-			$htaccess_tpl .= '<b style="color:blue"># END PHPBB PAGES' . "\n";
-			$htaccess_tpl .= '#####################################################</b>' . "\n\n";
+	# DO NOT GO FURTHER IF THE REQUESTED FILE / DIR DOES EXISTS
+	RewriteCond %{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule . - [L]",
 
-			// mods .htaccess pos2
-			if (!empty($mods_ht['pos2']))
-			{
-				$htaccess_tpl .= $mods_ht['pos2'];
-			}
+				'footer' => '	#
+	# The following 3 lines will rewrite URLs passed through the front controller
+	# to not require app.php in the actual URL. In other words, a controller is
+	# by default accessed at /app.php/my/controller, but can also be accessed at
+	# /my/controller
+	#
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}(.*)$ app.{PHP_EX} [QSA,L]
 
-			$htaccess_tpl .= '#
-# The following 3 lines will rewrite URLs passed through the front controller
-# to not require app.php in the actual URL. In other words, a controller is
-# by default accessed at /app.php/my/controller, but can also be accessed at
-# /my/controller
-#
-<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-f
-<b style="color:green">RewriteCond</b> %{REQUEST_FILENAME} !-d
-<b style="color:green">RewriteRule</b> ^{WIERD_SLASH}{PHPBB_LPATH}(.*)$ app.{PHP_EX} [QSA,L]' . "\n\n";
+</IfModule>
 
-			$htaccess_tpl .= '<b style="color:brown">&lt;/IfModule&gt;</b>' . "\n\n";
-
-			$htaccess_tpl .= '# With Apache 2.4 the "Order, Deny" syntax has been deprecated and moved from
+# With Apache 2.4 the "Order, Deny" syntax has been deprecated and moved from
 # module mod_authz_host to a new module called mod_access_compat (which may be
 # disabled) and a new "Require" syntax has been introduced to mod_authz_host.
 # We could just conditionally provide both versions, but unfortunately Apache
 # does not explicitly tell us its version if the module mod_version is not
 # available. In this case, we check for the availability of module
 # mod_authz_core (which should be on 2.4 or higher only) as a best guess.
-<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">mod_version.c</b><b style="color:brown">&gt;</b>
-	<b style="color:brown">&lt;IfVersion</b> <b style="color:#FF00FF">&lt; 2.4</b><b style="color:brown">&gt;</b>
-		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+<IfModule mod_version.c>
+	<IfVersion < 2.4>
+		<Files "config.php">
 			Order Allow,Deny
 			Deny from All
-		<b style="color:brown">&lt;/Files&gt;</b>
-		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+		</Files>
+		<Files "common.php">
 			Order Allow,Deny
 			Deny from All
-		<b style="color:brown">&lt;/Files&gt;</b>
-	<b style="color:brown">&lt;/IfVersion&gt;</b>
-	<b style="color:brown">&lt;IfVersion</b> <b style="color:#FF00FF">&gt;= 2.4</b><b style="color:brown">&gt;</b>
-		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+		</Files>
+	</IfVersion>
+	<IfVersion >= 2.4>
+		<Files "config.php">
 			Require all denied
-		<b style="color:brown">&lt;/Files&gt;</b>
-		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+		</Files>
+		<Files "common.php">
 			Require all denied
-		<b style="color:brown">&lt;/Files&gt;</b>
-	<b style="color:brown">&lt;/IfVersion&gt;</b>
-<b style="color:brown">&lt;/IfModule&gt;</b>
-<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">!mod_version.c</b><b style="color:brown">&gt;</b>
-	<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">!mod_authz_core.c</b><b style="color:brown">&gt;</b>
-		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+		</Files>
+	</IfVersion>
+</IfModule>
+<IfModule !mod_version.c>
+	<IfModule !mod_authz_core.c>
+		<Files "config.php">
 			Order Allow,Deny
 			Deny from All
-		<b style="color:brown">&lt;/Files&gt;</b>
-		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+		</Files>
+		<Files "common.php">
 			Order Allow,Deny
 			Deny from All
-		<b style="color:brown">&lt;/Files&gt;</b>
-	<b style="color:brown">&lt;/IfModule&gt;</b>
-	<b style="color:brown">&lt;IfModule</b> <b style="color:#FF00FF">mod_authz_core.c</b><b style="color:brown">&gt;</b>
-		<b style="color:brown">&lt;Files</b> <b style="color:#FF00FF">"config.php"</b><b style="color:brown">&gt;</b>
+		</Files>
+	</IfModule>
+	<IfModule mod_authz_core.c>
+		<Files "config.php">
 			Require all denied
-		<b style="color:brown">&lt;/Files&gt;</b>
-		<b style="color:brown">&lt;Files </b> <b style="color:#FF00FF">"common.php"</b><b style="color:brown">&gt;</b>
+		</Files>
+		<Files "common.php">
 			Require all denied
-		<b style="color:brown">&lt;/Files&gt;</b>
-	<b style="color:brown">&lt;/IfModule&gt;</b>
-<b style="color:brown">&lt;/IfModule&gt;</b>';
+		</Files>
+	</IfModule>
+</IfModule>',
+				'prettify' => array(
+					'struct' => array(
+						'find' => array(
+							'`^(\s*)(\&lt;(IfModule|IfVersion|Files)([^>]+)\&gt;)$`Um',
+							'`^(\s*)(\&lt;/(IfModule|IfVersion|Files)\&gt;)$`Um',
+							'`(\s+)(\[[A-Z0-9,=]+\])$`Um'
+						),
+						'replace' => array(
+							'\1<b style="color:brown">&lt;\3</b><b style="color:#FF00FF">\4</b><b style="color:brown">&gt;</b>',
+							'\1<b style="color:brown">\2</b>',
+							'\1<b style="color:brown">\2</b>',
+						),
+					),
+				),
+				'header_title' => $this->user->lang['SEO_APACHE_CONF'],
+				'header_message' => $show_rewritebase_opt && $this->new_config['rbase'] ?
+					sprintf($this->user->lang['SEO_HTACCESS_FOLDER_MSG'], '<em style="color:#000">' . $this->core->seo_path['phpbb_url'] . '</em>') :
+					sprintf($this->user->lang['SEO_HTACCESS_ROOT_MSG'], '<em style="color:#000">' . $this->core->seo_path['root_url'] . '</em>'),
+				'filename' => '.htaccess',
+			),
 
-			if (!empty($default_slash) && $this->new_config['more_options'])
-			{
-				$default_slash = '<b style="color:red">' . $default_slash . '</b>';
-			}
+			// ngix
+			'ngix' => array(
+				'header' => 'location /{REWRITEBASE} {
+	# DO NOT GO FURTHER IF THE REQUESTED FILE / DIR DOES EXISTS
+	if (-e $request_filename) {
+		break;
+	}',
+				'footer' => '	#
+	# The following 3 lines will rewrite URLs passed through the front controller
+	# to not require app.php in the actual URL. In other words, a controller is
+	# by default accessed at /app.php/my/controller, but can also be accessed at
+	# /my/controller
+	#
+	if (!-e $request_filename) {
+		rewrite ^{WIERD_SLASH}{PHPBB_RPATH}(.*)$ {DEFAULT_SLASH}{PHPBB_RPATH}app.{PHP_EX} last;
+	}
+}',
+				'prettify' => array(
+					'struct' => array(
+						'find' => array(
+							'`(break|last|permanent);$`m',
+							'`^(location)`m',
+							'`^(\s*)if \(([^)]+)\) {$`Um',
+						),
+						'replace' => array(
+							'<b style="color:brown">\1</b>;',
+							'<b style="color:brown">\1</b>',
+							'\1<b style="color:brown">if </b>(<b style="color:#FF00FF">\2</b>) {',
+						),
+					),
+				),
+				'translate' => array(
+					'find' => array(
+						'RewriteRule',
+						'[QSA,L,NC]',
+						'[QSA,L,NC,R=301]',
+						'{WIERD_SLASH}',
+						'{DEFAULT_SLASH}',
+					),
+					'replace' => array(
+						'rewrite',
+						'last;',
+						'permanent;',
+						$wierd_slash ? '' : '{RED_SLASH}',
+						$rewritebase ? ($this->new_config['slash'] ? '' : '{RED_SLASH}') : '{RED_SLASH}',
+					),
+				),
+				'header_title' => $this->user->lang['SEO_NGIX_CONF'],
+				'header_message' => $this->user->lang['SEO_NGIX_CONF_EXPLAIN'],
+				'filename' => 'ngix.conf',
+			),
+		);
 
-			// The tpl array
-			$htaccess_tpl_vars = array();
-
-			// handle the suffixes proper in the RegEx
-			// set up pagination reg ex
-			// set up ext bits
-			$seo_ext = array(
-				// force '/' for both / and empty ext to add /? in RegEx (which allows both cases)
-				'pagination'	=> trim($this->core->seo_ext['pagination'], '/') ? str_replace('.', '\\.', $this->core->seo_ext['pagination']) : '/',
+		$rewrite_rules = array();
+		if (!empty($this->core->seo_static['index']))
+		{
+			$rewrite_rules += array(
+				'forum_index' => '	# FORUM INDEX
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_INDEX}{EXT_INDEX}$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]',
 			);
+		}
+		else
+		{
+			$rewrite_rules += array(
+				'forum_index' => '	# FORUM INDEX REWRITERULE WOULD STAND HERE IF USED. "forum" REQUIRES TO BE SET AS FORUM INDEX
+	# RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}forum\.html$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]',
+			);
+		}
+		$rewrite_rules += array(
+			'forum' => '	# FORUM ALL MODES
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?f=$2&start=$4 [QSA,L,NC]',
+				'topic_vfolder' => '	# TOPIC WITH VIRTUAL FOLDER ALL MODES
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+)/({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?f=$2&t=$4&start=$6 [QSA,L,NC]',
 
-			$reg_ex_page = sprintf($tpl['paginpage'], $this->core->seo_static['pagination'], $seo_ext['pagination'] . ($seo_ext['pagination'] === '/' ? '?' : ''));
+			'topic_nofid' => '	# TOPIC WITHOUT FORUM ID & DELIM ALL MODES
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]*)/?({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?forum_uri=$1&t=$3&start=$5 [QSA,L,NC]',
+		);
+		if ($this->core->seo_opt['profile_noids'])
+		{
+			$rewrite_rules += array(
+				'profile' => '	# PROFILES THROUGH USERNAME
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/?$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&un=$1 [QSA,L,NC]',
 
-			foreach ($this->core->seo_ext as $type => $value)
+				'user_messages' => '	USER MESSAGES THROUGH USERNAME
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author=$1&sr=$2&start=$4 [QSA,L,NC]',
+			);
+		}
+		else
+		{
+			$rewrite_rules += array(
+				'profile' => '	# PROFILES ALL MODES WITH ID
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){EXT_USER}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&u=$2 [QSA,L,NC]',
+
+				'user_messages' => '	# USER MESSAGES ALL MODES WITH ID
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){DELIM_SR}(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author_id=$2&sr=$3&start=$5 [QSA,L,NC]',
+			);
+		}
+
+		$rewrite_rules += array(
+			'group' => '	# GROUPS ALL MODES
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_GROUP}|[a-z0-9_-]*{DELIM_GROUP})([0-9]+){GROUP_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=group&g=$2&start=$4 [QSA,L,NC]',
+			'posts' => '	# POSTS
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_POST}([0-9]+){EXT_POST}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?p=$1 [QSA,L,NC]',
+
+			'active_topics' => '	# ACTIVE TOPICS
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_ATOPIC}{ATOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=active_topics&start=$2&sr=topics [QSA,L,NC]',
+
+			'unanswered_topics' => '	# UNANSWERED TOPICS
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_UTOPIC}{UTOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unanswered&start=$2&sr=topics [QSA,L,NC]',
+
+			'new_posts' => '	# NEW POSTS
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_NPOST}{NPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=newposts&start=$2&sr=topics [QSA,L,NC]',
+
+			'unread_posts' => '	# UNREAD POSTS
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_URPOST}{URPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unreadposts&start=$2 [QSA,L,NC]',
+
+			'the_team' => '	# THE TEAM
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_LEADERS}{EXT_LEADERS}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=leaders [QSA,L,NC]',
+
+			'comment_more_rules' => '	# HERE IS A GOOD PLACE TO ADD OTHER PHPBB RELATED REWRITERULES
+',
+		);
+
+		// mods server_conf pos1
+		if (!empty($mods_ht['pos1']))
+		{
+			$rewrite_rules += $mods_ht['pos1'];
+		}
+		$rewrite_rules += array(
+			'comment_forum_noid' => '	# FORUM WITHOUT ID & DELIM ALL MODES
+	# THESE LINES MUST BE LOCATED AT THE END OF YOUR HTACCESS TO WORK PROPERLY',
+		);
+		if (trim($this->core->seo_ext['forum'],'/'))
+		{
+			$rewrite_rules += array(
+				'forum_noid' => array(
+					'apache' => '	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 [QSA,L,NC]',
+					'ngix' => '	if (!-e $request_filename) {
+		rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
+		rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 last;
+	}',
+				),
+			);
+		}
+		else
+		{
+			$rewrite_rules += array(
+				'forum_noid' => array(
+					'apache' => '	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]',
+					'ngix' => '	if (!-e $request_filename) {
+		rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
+	}',
+				),
+			);
+		}
+
+		$rewrite_rules += array(
+			'relative_files' => '	# FIX RELATIVE PATHS : FILES
+	RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(style\.{PHP_EX}|ucp\.{PHP_EX}|mcp\.{PHP_EX}|faq\.{PHP_EX}|download/file.{PHP_EX})$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
+
+			'relative_images' => '	# FIX RELATIVE PATHS : IMAGES
+	RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(styles/.*|images/.*)/$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
+		);
+
+		// mods server_conf pos2
+		if (!empty($mods_ht['pos2']))
+		{
+			$rewrite_rules += $mods_ht['pos2'];
+		}
+
+		// build rewrite conf
+		$rewrite_conf_result = array();
+		$html_output = '';
+		foreach ($rewrite_conf as $engine => $setup)
+		{
+			$translate = !empty($setup['translate']) ? $setup['translate'] : false;
+
+			if (!empty($translate))
 			{
-				$_value = trim($value, '/');
-				// force '/' for both / and empty ext to add /? in RegEx (which allows both cases)
-				$seo_ext[$type] = $_value ? str_replace('.', '\\.', $value) : '/';
-				$htaccess_tpl_vars['{' . strtoupper($type) . '_PAGINATION}'] = $_value ? sprintf($tpl['pagin'], $this->core->seo_delim['start'], $seo_ext[$type]) : $reg_ex_page;
-				// use url/? to allow both url and url/ to work as expected
-				$htaccess_tpl_vars['{EXT_' . strtoupper($type) . '}'] = sprintf($tpl['ext'] , $seo_ext[$type]) . ($_value ? '' : '?');
+				$setup['header'] = str_replace($translate['find'], $translate['replace'], $setup['header']);
+				$setup['footer'] = str_replace($translate['find'], $translate['replace'], $setup['footer']);
 			}
 
-			$htaccess_tpl_vars['{PAGE_PAGINATION}'] = $reg_ex_page;
+			$rewrite_conf_result[$engine] = $setup['header'] . "\n";
 
-			// static bits
-			foreach ($this->core->seo_static as $type => $value)
+			// add rewrite rules
+			foreach ($rewrite_rules as $key => $rule)
 			{
-				if (!is_array($this->core->seo_static[$type]))
+				if (is_array($rule))
 				{
-					$htaccess_tpl_vars['{STATIC_' . strtoupper($type) . '}'] = sprintf($tpl['static'], $this->core->seo_static[$type]);
+					$rule = $rule[$engine];
 				}
+				if (!empty($translate))
+				{
+					$rule = str_replace($translate['find'], $translate['replace'], $rule);
+				}
+				$rewrite_conf_result[$engine] .= "$rule\n";
 			}
 
-			// delim bits
-			foreach ($this->core->seo_delim as $type => $value)
-			{
-				$htaccess_tpl_vars['{DELIM_' . strtoupper($type) . '}'] = sprintf($tpl['delim'], $this->core->seo_delim[$type]);
-			}
+			$rewrite_conf_result[$engine] .= $setup['footer'] . "\n";
 
-			// common .htaccess vars
-			$htaccess_tpl_vars += array(
-				'{REWRITEBASE}'		=> $rewritebase,
-				'{PHP_EX}'			=> $this->php_ext,
-				'{PHPBB_LPATH}'		=> ($this->new_config['rbase'] || $this->core->seo_opt['virtual_root']) ? '' : $phpbb_path,
-				'{PHPBB_RPATH}'		=> $this->new_config['rbase'] ? '' : $phpbb_path,
-				'{DEFAULT_SLASH}'	=> $default_slash,
-				'{WIERD_SLASH}'		=> $wierd_slash,
-				'{MOD_RTYPE}'		=> $modrtype[$modrtype['type']],
+			// parse template variables
+			$rewrite_conf_result[$engine] = array(
+				'html' => str_replace(array_keys($rewrite_tpl_vars), array_values($rewrite_tpl_vars), utf8_htmlspecialchars($rewrite_conf_result[$engine])),
 			);
+			$rewrite_conf_result[$engine]['raw'] = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'), strip_tags($rewrite_conf_result[$engine]['html']));
+			if ($html)
+			{
+				// prettify
+				foreach ($prettify_common as $type => $prettify)
+				{
+					$rewrite_conf_result[$engine]['html'] = preg_replace($prettify['find'], $prettify['replace'], $rewrite_conf_result[$engine]['html']);
+				}
 
-			// Parse .htaccess
-			$htaccess_code = str_replace(array_keys($htaccess_tpl_vars), array_values($htaccess_tpl_vars), $htaccess_tpl);
-		} // else the .htaccess is already generated
+				if (!empty($setup['prettify']))
+				{
+					foreach ($setup['prettify'] as $_type => $_prettify)
+					{
+						$rewrite_conf_result[$engine]['html'] = preg_replace($_prettify['find'], $_prettify['replace'], $rewrite_conf_result[$engine]['html']);
+					}
+				}
+
+				$rewrite_conf_result[$engine]['html_output'] = '<div class="content">
+	<div id="' . $engine . '_toggle" title="' . $this->user->lang['SEO_SHOW'] . '&nbsp;/&nbsp;' . $this->user->lang['SEO_HIDE'] . '">
+		<h3>' . $setup['header_title'] . '</h3>
+		<b style="color:red">' . $setup['header_message'] . '</b><br><br>
+	</div>
+	<div id="' . $engine . '_code">
+		<dl style="padding:5px;background-color:#FFFFFF;border:1px solid #d8d8d8;font-size:12px;">
+			<dt style="border-bottom:1px solid #CCCCCC;margin-bottom:3px;font-weight:bold;display:block;">&nbsp;<a id="' . $engine . '_select">' . $this->user->lang['SEO_SELECT_ALL'] . '</a></dt>
+			<dd >
+				<code style="padding-top:5px;line-height:1.3em;color:#8b8b8b;font-weight:bold;font-family: monospace;white-space: pre;" id="' . $engine . '_code_select">
+' . str_replace(array("\n", "\t"), array('<br>', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'), $rewrite_conf_result[$engine]['html']) . '
+				</code>
+			</dd>
+		</dl>
+	</div>
+</div>';
+				$html_output .= $rewrite_conf_result[$engine]['html_output'];
+			}
+		}
+
+		$this->template->assign_vars(array(
+			'SEO_REWRITE_ENGINES'	=> '["' . (implode('","', array_keys($rewrite_conf))) . '"]',
+		));
 
 		if ($html)
 		{
 			// HTML output
-			$htaccess_output = '</p>';
+			$html_output = '</p>' . $html_output;
+			$html_output .= '<div style="padding:5px;margin-top:10px;background-color:#FFFFFF;border:1px solid #d8d8d8;font-size:12px;"><b>' . $this->user->lang['SEO_SERVER_CONF_CAPTION'] . ':</b><ul style="margin-left:30px;margin-top:10px;font-weight:bold;font-size:12px;">
+	<li style="color:blue">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_COMMENT'] . '</li>
+	<li style="color:#A020F0">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_STATIC'] . '</li>
+	<li style="color:#6A5ACD">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_SUFFIX'] . '</li>
+	<li style="color:#FF00FF">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_DELIM'] . '</li>' . "\n";
 
-			// build location message
-			if ($show_rewritebase_opt && $this->new_config['rbase'])
-			{
-				$msg_loc = sprintf($this->user->lang['SEO_HTACCESS_FOLDER_MSG'], '<em style="color:#000">' . $this->core->seo_path['phpbb_url'] . '</em>');
-			}
-			else
-			{
-				$msg_loc = sprintf($this->user->lang['SEO_HTACCESS_ROOT_MSG'], '<em style="color:#000">' . $this->core->seo_path['root_url'] . '</em>');
-			}
-
-			$htaccess_output .= '<div class="content"><hr/>' . "\n" . '<b style="color:red">&rArr;&nbsp;' . $msg_loc . '</b><br/><br/><hr/>' . "\n";
-			$htaccess_output .= '<b>.htaccess :&nbsp;<a id="htaccess_toggle">' . $this->user->lang['SEO_SHOW'] . '&nbsp;/&nbsp;' . $this->user->lang['SEO_HIDE'] . '</a></b>' . "\n";
-			$htaccess_output .= '<div id="htaccess_code"><dl style="padding:5px;background-color:#FFFFFF;border:1px solid #d8d8d8;font-size:12px;"><dt style="border-bottom:1px solid #CCCCCC;margin-bottom:3px;font-weight:bold;display:block;">&nbsp;<a id="htaccess_select">' . $this->user->lang['SEO_SELECT_ALL'] . '</a></dt>' . "\n";
-			$htaccess_output .= '<dd ><code style="padding-top:5px;line-height:1.3em;color:#8b8b8b;font-weight:bold;font-family: monospace;white-space: pre;" id="htaccess_code_select"><br/><br/>' . str_replace("\n", '<br/>', $htaccess_code) . '</code></dd>' . "\n";
-			$htaccess_output .= '</dl>' . "\n";
-			$htaccess_output .= '<div style="padding:5px;margin-top:10px;background-color:#FFFFFF;border:1px solid #d8d8d8;font-size:12px;"><b>' . $this->user->lang['SEO_HTACCESS_CAPTION'] . ':</b><ul style="margin-left:30px;margin-top:10px;font-weight:bold;font-size:12px;">' . "\n";
-			$htaccess_output .= '<li style="color:blue">&nbsp;' . $this->user->lang['SEO_HTACCESS_CAPTION_COMMENT'] . '</li>' . "\n";
-			$htaccess_output .= '<li style="color:#A020F0">&nbsp;' . $this->user->lang['SEO_HTACCESS_CAPTION_STATIC'] . '</li>' . "\n";
-			$htaccess_output .= '<li style="color:#6A5ACD">&nbsp;' . $this->user->lang['SEO_HTACCESS_CAPTION_SUFFIX'] . '</li>' . "\n";
-			$htaccess_output .= '<li style="color:#FF00FF">&nbsp;' . $this->user->lang['SEO_HTACCESS_CAPTION_DELIM'] . '</li>' . "\n";
 
 			if ($this->new_config['more_options'])
 			{
-				$htaccess_output .= '<li style="color:red">&nbsp;' . $this->user->lang['SEO_HTACCESS_CAPTION_SLASH'] . '</li>&nbsp;' . "\n";
+				$html_output .= '<li style="color:red">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_SLASH'] . '</li>' . "\n";
 			}
 
-			$htaccess_output .= '</ul></div>' . "\n" . '</div></div><p>' . "\n";
+			$html_output .= '</ul></div><p>' . "\n";
+			return $html_output;
 		}
 		else
 		{
 			// File output
-			$htaccess_output = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'), strip_tags($htaccess_code));
+			foreach ($rewrite_conf as $engine => $setup)
+			{
+				$file = $this->core->seo_opt['cache_folder'] . $setup['filename'];
+				$update = $rewrite_conf_result[$engine]['raw'];
+				$this->write_cache($file,  $update);
+			}
 		}
-
-		return $htaccess_output;
 	}
 
 	/**
-	*  get_mods_ht Get all mods htaccess tpls
+	*  get_mods_server_conf Get all mods server_conf tpls
 	*/
-	function get_mods_ht()
+	function get_mods_server_conf()
 	{
 		$all_ht_tpl = array('pos1' => '', 'pos2' => '');
 		$path = PHPBB_SEO_USU_ROOT_DIR . 'htmods';
@@ -1435,7 +1610,16 @@ class usu
 
 			// check if the config cache file is here already and writeable
 			$check = $this->core->cache_config['file'];
-			$checks = array("{$check}.old", "{$check}.current", "{$cache_dir}.htaccess", "{$cache_dir}.htaccess.old", "{$cache_dir}.htaccess.current");
+			$checks = array(
+				"{$check}.old",
+				"{$check}.current",
+				"{$cache_dir}.htaccess",
+				"{$cache_dir}.htaccess.old",
+				"{$cache_dir}.htaccess.current",
+				"{$cache_dir}ngix.conf",
+				"{$cache_dir}ngix.conf.old",
+				"{$cache_dir}ngix.conf.current",
+			);
 
 			// let's check all files
 			$inner_write = true;
@@ -1481,26 +1665,11 @@ class usu
 	/**
 	* write_cache( ) will write the cached file and keep backups.
 	*/
-	function write_cache($type = 'forum')
+	function write_cache($file, $update)
 	{
 		if(!$this->core->cache_config['cache_enable'])
 		{
 			return false;
-		}
-
-		if ($type == 'htaccess')
-		{
-			// .htaccess case
-			$file = $this->core->seo_opt['cache_folder'] . '.htaccess';
-			$update = $this->seo_htaccess(false);
-		}
-		else
-		{
-			// config
-			$file = $this->core->cache_config['file'];
-			$update = '<'.'?php' . "\n" . '/**' . "\n" . '* phpBB SEO' . "\n" . '* www.phpBB-SEO.com' . "\n" . '* @package phpBB SEO USU' . "\n" . '*/' . "\n" . 'if (!defined(\'IN_PHPBB\')) {' . "\n\t" . 'exit;' . "\n" . '}' . "\n";
-			$update .= '$settings = ' . preg_replace('`[\s]+`', ' ', var_export($this->core->cache_config['settings'], true)) . ';'. "\n";
-			$update .= '$forum_urls = ' . preg_replace('`[\s]+`', ' ', var_export($this->core->cache_config['forum_urls'], true)) . ';';
 		}
 
 		// Keep a backup of the previous settings
