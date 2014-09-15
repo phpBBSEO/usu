@@ -1433,7 +1433,6 @@ class usu
 	<li style="color:#6A5ACD">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_SUFFIX'] . '</li>
 	<li style="color:#FF00FF">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_DELIM'] . '</li>' . "\n";
 
-
 			if ($this->new_config['more_options'])
 			{
 				$html_output .= '<li style="color:red">&nbsp;' . $this->user->lang['SEO_SERVER_CONF_CAPTION_SLASH'] . '</li>' . "\n";
