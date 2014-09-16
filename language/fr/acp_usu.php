@@ -122,6 +122,10 @@ $lang = array_merge($lang, array(
 	'SEO_META_ROBOTS_EXPLAIN' => 'La balise Méta Robots indique aux bots des moteur de recherche comment indexer les pages de votre site. Elle est réglée sur "index,follow" par défaut, ce qui autorise les moteurs de recherche à indexer et mettre en cache les pages et à suivre les liens qui s’y trouvent. Désactive la balise si vide.<br/><b style="color:red;">Attention :</b><br/>Cette balise est sensible, si vous mettez "noindex", aucune page ne sera référencée',
 	'SEO_META_NOARCHIVE' => 'Méta Robots Noarchive',
 	'SEO_META_NOARCHIVE_EXPLAIN' => 'La balise Méta Robots Noarchive indique aux moteurs de recherche s’ils doivent ou non mettre les pages en cache. Cette option ne concerne que la mise en cache des pages, elle est sans rapports avec l’indexation et le positionnement des pages.<br/>Vous pouvez ici choisir les forums qui auront l’option "noarchive" ajoutée à leur balise méta robots en cours.<br/>C’est par exemple très pratique si certains de vos forums sont ouverts aux robots sans être ouverts aux invités. Vous pourrez dans ce cas utiliser l’option noarchive pour ceux-ci, afin qu’ils apparaissent dans les résultats des moteurs de recherches sans que les invités puissent voir le contenu des pages sans s’inscrire via le cache des moteurs de recherches',
+	'SEO_META_OG' => 'Open Graph',
+	'SEO_META_OG_EXPLAIN' => 'Activer <a href="/docs/technical-guides/opengraph/defining-an-object/">Open Graph tags</a> pour permettre au Crawler Facebook de generer des prévisualisations quand votre contenu est partagé sur Facebook.',
+	'SEO_META_FB_APP_ID' => 'App ID Facebook',
+	'SEO_META_FB_APP_ID_EXPLAIN' => 'L’ID unique permettant à Facebook de reconnaitre votre site. Cette ID est cruciale pour le fonctionnement de <a href="https://developers.facebook.com/docs/insights/">Facebook Insights</a>.',
 	// Install
 	'SEO_INSTALL_PANEL'	=> 'Installation phpBB SEO',
 	'SEO_ERROR_INSTALL'	=> 'Une erreur est survenue lore de l’installation. Il est plus prudent de désinstaller une fois avant de rééssayer.',

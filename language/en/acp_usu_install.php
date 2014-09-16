@@ -36,6 +36,7 @@ if (empty($lang) || !is_array($lang))
 //
 $lang = array_merge($lang, array(
 	// ACP
+	'SEO_RELATED_TOPICS' => 'Related topics',
 	'SEO_RELATED' => 'Related topics activation',
 	'SEO_RELATED_EXPLAIN' => 'Display or not a related topic list in topic pages.<br/><b style="color:red;">Note :</b><br/>With mySQL >=4.1 and the topic table using MyISAM, related topics will be obtained using a FullText index on  the topic title and will be sorted by relevancy. in other cases, an SQL LIKE will be used, and results will be sorted by publication time',
 	'SEO_RELATED_CHECK_IGNORE' => 'Ignore words filter',

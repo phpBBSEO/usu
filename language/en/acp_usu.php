@@ -121,6 +121,10 @@ $lang = array_merge($lang, array(
 	'SEO_META_ROBOTS_EXPLAIN' => 'The Meta Robots tag tells bots how to index your pages. It is set by default to "index,follow", which allow bots to index and cache your pages and to follow links in them. Inactivates the meta Robots tag if empty.<br/><b style="color:red;">Warning :</b><br/>This tag is sensible, if you were to use "noindex", none of your pages would be indexed',
 	'SEO_META_NOARCHIVE' => 'Noarchive Meta Robots',
 	'SEO_META_NOARCHIVE_EXPLAIN' => 'The Noarchive Meta Robots tag tells bots if they can or not cache the page. It only concerns caching, it has no relation to indexing and SERPs of the page.<br/>You can select here a list of forums that will have the "noarchive" option added to their meta robots.<br/>This feature can be handy, for example when you have some forums opened to bots but closed to guests. Adding the "noarchive" option to them will prevent guests from accessing content through the search engine cache, while the forum and its topic will still appear in SERPs',
+	'SEO_META_OG' => 'Open Graph',
+	'SEO_META_OG_EXPLAIN' => 'Activate <a href="/docs/technical-guides/opengraph/defining-an-object/">Open Graph tags</a> to allow the Facebook Crawler to generate previews when your content is shared on Facebook.',
+	'SEO_META_FB_APP_ID' => 'Facebook App ID',
+	'SEO_META_FB_APP_ID_EXPLAIN' => 'The unique ID that lets Facebook know the identity of your site. This is crucial for <a href="https://developers.facebook.com/docs/insights/">Facebook Insights</a> to work properly.',
 	// Install
 	'SEO_INSTALL_PANEL'	=> 'phpBB SEO Installation Panel',
 	'SEO_ERROR_INSTALL'	=> 'An error occurred during the installation process. Uninstall once is safer before you retry.',
