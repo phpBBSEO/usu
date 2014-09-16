@@ -36,6 +36,7 @@ if (empty($lang) || !is_array($lang))
 //
 $lang = array_merge($lang, array(
 	// ACP
+	'SEO_RELATED_TOPICS' => 'Related topics',
 	'SEO_RELATED' => 'Activer les articles en relation',
 	'SEO_RELATED_EXPLAIN' => 'Afficher ou non une liste de sujets en relation sur les pages de sujets.<br/><b style="color:red;">Note :</b><br/>Avec MYSQL >=4.1 et si la table des sujets utilise MyISAM, la relation sera établile via un index FullText sur le titre des sujets et les résultats seront classé par pertinence. Dans les autres cas, une requête LIKE sera utilisée et les résultats seront classés par ordre de publication',
 	'SEO_RELATED_CHECK_IGNORE' => 'Filtre mots ignorés',

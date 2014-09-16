@@ -135,6 +135,7 @@ class usu
 		switch ($mode)
 		{
 			case 'settings':
+
 				$display_vars['title'] = 'ACP_PHPBB_SEO_CLASS';
 				$this->user->lang['ACP_PHPBB_SEO_CLASS_EXPLAIN'] = sprintf($this->user->lang['ACP_PHPBB_SEO_CLASS_EXPLAIN'], $this->modrtype_lang['ulink'], $this->modrtype_lang['uforumlink'], '</p><hr/><p><b>' . $this->user->lang['ACP_PHPBB_SEO_MODE'] . ' : ' . $this->modrtype_lang['link'] . ' - ( ' . $this->modrtype_lang['forumlink'] . ' )</b></p><hr/><p>');
 				$display_vars['vars'] = array();
@@ -341,10 +342,11 @@ class usu
 				break;
 
 			case 'extended':
+
 				$display_vars = array(
 					'title'	=> 'ACP_SEO_EXTENDED',
 					'vars'	=> array(
-						'legend1'			=> 'SEO_EXTERNAL_LINKS',
+						'legend1'		=> 'SEO_EXTERNAL_LINKS',
 						'seo_ext_links'		=> array('lang' => 'SEO_EXTERNAL_LINKS', 'validate' => 'bool', 'type' => 'radio:enabled_disabled', 'explain' => true, 'default' => 1),
 						'seo_ext_subdomain'	=> array('lang' => 'SEO_EXTERNAL_SUBDOMAIN', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true, 'default' => 0),
 						'seo_ext_classes'	=> array('lang' => 'SEO_EXTERNAL_CLASSES', 'validate' => 'string', 'type' => 'text:40:250', 'explain' => true, 'default' => ''),
@@ -359,10 +361,10 @@ class usu
 					$this->user->add_lang_ext('phpbbseo/usu', 'acp_usu_install');
 
 					$display_vars['vars'] += array(
-						'legend2'					=> 'RELATED_TOPICS',
-						'seo_related'				=> array('lang' => 'SEO_RELATED', 'validate' => 'bool', 'type' => 'radio:enabled_disabled', 'explain' => true, 'append' => !empty($this->config['seo_related']) ? '<br/>' . (!empty($this->config['seo_related_fulltext']) ? $this->user->lang['FULLTEXT_INSTALLED'] : $this->user->lang['FULLTEXT_NOT_INSTALLED']) : '', 'default' => 0),
+						'legend2'			=> 'SEO_RELATED_TOPICS',
+						'seo_related'			=> array('lang' => 'SEO_RELATED', 'validate' => 'bool', 'type' => 'radio:enabled_disabled', 'explain' => true, 'append' => !empty($this->config['seo_related']) ? '<br/>' . (!empty($this->config['seo_related_fulltext']) ? $this->user->lang['FULLTEXT_INSTALLED'] : $this->user->lang['FULLTEXT_NOT_INSTALLED']) : '', 'default' => 0),
 						'seo_related_check_ignore'	=> array('lang' => 'SEO_RELATED_CHECK_IGNORE', 'validate' => 'bool', 'type' => 'radio:enabled_disabled', 'explain' => true, 'default' => 0),
-						'seo_related_limit'			=> array('lang' => 'SEO_RELATED_LIMIT', 'validate' => 'int:2:25', 'type' => 'text:3:4', 'explain' => true, 'default' => 5),
+						'seo_related_limit'		=> array('lang' => 'SEO_RELATED_LIMIT', 'validate' => 'int:2:25', 'type' => 'text:3:4', 'explain' => true, 'default' => 5),
 						'seo_related_allforums'		=> array('lang' => 'SEO_RELATED_ALLFORUMS', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true, 'default' => 0),
 					);
 				}
@@ -371,29 +373,39 @@ class usu
 				if (!empty($this->config['seo_meta_on']))
 				{
 					$display_vars['vars'] += array(
-						'legend3' 					=> 'SEO_META',
-						'seo_meta_title'			=> array('lang' => 'SEO_META_TITLE', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['sitename']),
-						'seo_meta_desc'				=> array('lang' => 'SEO_META_DESC', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['site_desc']),
+						'legend3' 			=> 'SEO_META',
+						'seo_meta_title'		=> array('lang' => 'SEO_META_TITLE', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['sitename']),
+						'seo_meta_desc'			=> array('lang' => 'SEO_META_DESC', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['site_desc']),
 						'seo_meta_desc_limit'		=> array('lang' => 'SEO_META_DESC_LIMIT', 'validate' => 'int:5:40', 'type' => 'text:3:4', 'explain' => true, 'default' => 25),
 						'seo_meta_bbcode_filter'	=> array('lang' => 'SEO_META_BBCODE_FILTER', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => 'img|url|flash|code'),
-						'seo_meta_keywords'			=> array('lang' => 'SEO_META_KEYWORDS', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['site_desc']),
+						'seo_meta_keywords'		=> array('lang' => 'SEO_META_KEYWORDS', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['site_desc']),
 						'seo_meta_keywords_limit'	=> array('lang' => 'SEO_META_KEYWORDS_LIMIT', 'validate' => 'int:5:40', 'type' => 'text:3:4', 'explain' => true, 'default' => 15),
-						'seo_meta_min_len'			=> array('lang' => 'SEO_META_MIN_LEN', 'validate' => 'int:0:10', 'type' => 'text:3:4', 'explain' => true, 'default' => 2),
+						'seo_meta_min_len'		=> array('lang' => 'SEO_META_MIN_LEN', 'validate' => 'int:0:10', 'type' => 'text:3:4', 'explain' => true, 'default' => 2),
 						'seo_meta_check_ignore'		=> array('lang' => 'SEO_META_CHECK_IGNORE', 'validate' => 'bool', 'type' => 'radio:enabled_disabled', 'explain' => true, 'default' => 0),
-						'seo_meta_lang'				=> array('lang' => 'SEO_META_LANG', 'validate' => 'lang', 'type' => 'select', 'method' => 'language_select', 'params' => array('{CONFIG_VALUE}'), 'explain' => true,  'default' => $this->config['default_lang']),
-						'seo_meta_copy'				=> array('lang' => 'SEO_META_COPY', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['sitename']),
+						'seo_meta_lang'			=> array('lang' => 'SEO_META_LANG', 'validate' => 'lang', 'type' => 'select', 'method' => 'language_select', 'params' => array('{CONFIG_VALUE}'), 'explain' => true,  'default' => $this->config['default_lang']),
+						'seo_meta_copy'			=> array('lang' => 'SEO_META_COPY', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => $this->config['sitename']),
 						'seo_meta_file_filter'		=> array('lang' => 'SEO_META_FILE_FILTER', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => 'ucp'),
 						'seo_meta_get_filter'		=> array('lang' => 'SEO_META_GET_FILTER', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => 'style,hilit,sid'),
-						'seo_meta_robots'			=> array('lang' => 'SEO_META_ROBOTS', 'validate' => 'string:0:225', 'type' => 'text:25:150', 'explain' => true, 'default' => 'index,follow'),
+						'seo_meta_robots'		=> array('lang' => 'SEO_META_ROBOTS', 'validate' => 'string:0:225', 'type' => 'text:25:150', 'explain' => true, 'default' => 'index,follow'),
 						'seo_meta_noarchive'		=> array('lang' => 'SEO_META_NOARCHIVE', 'validate' => 'string:0:225', 'multiple_validate' => 'int', 'type' => 'custom', 'method' => 'select_multiple', 'params' => array('{CONFIG_VALUE}', '{KEY}', $this->forum_select()), 'explain' => true, 'default' => ''),
+
+						'seo_meta_og'			=> array('lang' => 'SEO_META_OG', 'validate' => 'bool', 'type' => 'radio:enabled_disabled', 'explain' => true, 'default' => 0),
 					);
+
+					// Open Graph
+					if (!empty($this->config['seo_meta_og']))
+					{
+						$display_vars['vars'] += array(
+							'fb_app_id'	=> array('lang' => 'SEO_META_FB_APP_ID', 'validate' => 'string:0:225', 'type' => 'text:40:250', 'explain' => true, 'default' => ''),
+						);
+					}
 				}
 
 				// Optimal title
 				if (!empty($this->config['seo_optimal_title_on']))
 				{
 					$display_vars['vars'] += array(
-						'legend4'				=> 'SEO_PAGE_TITLES',
+						'legend'		=> 'SEO_PAGE_TITLES',
 						'seo_append_sitename'	=> array('lang' => 'SEO_APPEND_SITENAME', 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true, 'default' => 0),
 					);
 				}
