@@ -390,8 +390,6 @@ class usu
 						'seo_meta_noarchive'		=> array('lang' => 'SEO_META_NOARCHIVE', 'validate' => 'string:0:225', 'multiple_validate' => 'int', 'type' => 'custom', 'method' => 'select_multiple', 'params' => array('{CONFIG_VALUE}', '{KEY}', $this->forum_select()), 'explain' => true, 'default' => ''),
 
 						'seo_meta_og'			=> array('lang' => 'SEO_META_OG', 'validate' => 'bool', 'type' => 'radio:enabled_disabled', 'explain' => true, 'default' => 0),
-
-
 					);
 
 					// Open Graph
