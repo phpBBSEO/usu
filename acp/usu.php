@@ -1046,8 +1046,19 @@ class usu
 			$rewrite_tpl_vars['{DELIM_' . strtoupper($type) . '}'] = sprintf($spritf_tpl['delim'], $this->core->seo_delim[$type]);
 		}
 
+		$hostname = str_replace(array('https://', 'http://'), array('', ''), trim($this->core->seo_path['root_url'], '/ '));
+		$hostname_no_www = '';
+
+		if (preg_match('`^www\.`', $hostname))
+		{
+			$hostname_no_www = preg_replace('`^www\.`', '', $hostname);
+		}
+
+		$hostname_escaped = str_replace('.', '\\.', $hostname);
 		// common server_conf vars
 		$rewrite_tpl_vars += array(
+			'{HOSTNAME}'		=> $hostname,
+			'{HOSTNAME_ESCAPED}'	=> $hostname_escaped,
 			'{REWRITEBASE}'		=> $rewritebase,
 			'{PHP_EX}'		=> $this->php_ext,
 			'{PHPBB_LPATH}'		=> ($this->new_config['rbase'] || $this->core->seo_opt['virtual_root']) ? '' : $phpbb_path,
@@ -1096,8 +1107,8 @@ class usu
 	# Define fully qualified ssl aware protocol
 	# RewriteCond %{SERVER_PORT}s ^(443(s)|[0-9]+s)$
 	# RewriteRule ^.*$ - [env=HttpFullProto:http%2://]
-	# RewriteCond %{HTTP_HOST} !^" . str_replace(array('https://', 'http://', '.'), array('', '', '\\.'), trim($this->core->seo_path['root_url'], '/ ')) . "$ [NC]
-	# RewriteRule ^(.*)$ " . str_replace(array('https://', 'http://'), '%{ENV:HttpFullProto}', $this->core->seo_path['root_url']) . "{REWRITEBASE}$1 [QSA,L,R=301]
+	# RewriteCond %{HTTP_HOST} !^{HOSTNAME_ESCAPED}$ [NC]
+	# RewriteRule ^(.*)$ %{ENV:HttpFullProto}{HOSTNAME}/{REWRITEBASE}$1 [QSA,L,R=301]
 
 	# DO NOT GO FURTHER IF THE REQUESTED FILE / DIR DOES EXISTS
 	RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -1182,35 +1193,114 @@ class usu
 					sprintf($this->user->lang['SEO_HTACCESS_FOLDER_MSG'], '<em style="color:#000">' . $this->core->seo_path['phpbb_url'] . '</em>') :
 					sprintf($this->user->lang['SEO_HTACCESS_ROOT_MSG'], '<em style="color:#000">' . $this->core->seo_path['root_url'] . '</em>'),
 				'filename' => '.htaccess',
+				'rewrite_padding' => '	',
 			),
 
 			// ngix
 			'ngix' => array(
-				'header' => 'location /{REWRITEBASE} {
-	# DO NOT GO FURTHER IF THE REQUESTED FILE / DIR DOES EXISTS
-	if (-e $request_filename) {
-		break;
-	}',
-				'footer' => '	#
-	# The following 3 lines will rewrite URLs passed through the front controller
-	# to not require app.php in the actual URL. In other words, a controller is
-	# by default accessed at /app.php/my/controller, but can also be accessed at
-	# /my/controller
-	#
-	if (!-e $request_filename) {
-		rewrite ^{WIERD_SLASH}{PHPBB_RPATH}(.*)$ {DEFAULT_SLASH}{PHPBB_RPATH}app.{PHP_EX} last;
+				'header' => '# Sample nginx configuration file for phpBB.
+# Global settings have been removed, copy them
+# from your system\'s nginx.conf.
+# Tested with nginx 0.8.35.
+
+# If you want to use the X-Accel-Redirect feature,
+# add the following to your config.php.
+#
+#  define(\'PHPBB_ENABLE_X_ACCEL_REDIRECT\', true);
+#
+# See http://wiki.nginx.org/XSendfile for the details
+# on X-Accel-Redirect.
+http {
+	# Compression - requires gzip and gzip static modules.
+	gzip on;
+	gzip_static on;
+	gzip_vary on;
+	gzip_http_version 1.1;
+	gzip_min_length 700;
+
+	# Compression levels over 6 do not give an appreciable improvement
+	# in compression ratio, but take more resources.
+	gzip_comp_level 6;
+
+	# IE 6 and lower do not support gzip with Vary correctly.
+	gzip_disable "msie6";
+	# Before nginx 0.7.63:
+	#gzip_disable "MSIE [1-6]\.";
+
+	# Catch-all server for requests to invalid hosts.
+	# Also catches vulnerability scanners probing IP addresses.
+	server {
+		# default specifies that this block is to be used when
+		# no other block matches.
+		listen 80 default;
+
+		server_name bogus;
+		return 444;
+		root /var/empty;
+	}
+
+	# The actual board domain.
+	server {
+		#listen 80;
+		server_name {HOSTNAME};
+
+		root {REWRITEBASE};
+
+		location / {
+			# phpbb uses index.htm
+			index index.php index.html index.htm;
+
+			# multi domain ssl aware canonical hostname
+			# if ($host != {HOSTNAME}) {
+			# 	rewrite ^ $scheme://{HOSTNAME}$request_uri permanent;
+			# }
+
+			# DO NOT GO FURTHER IF THE REQUESTED FILE / DIR DOES EXISTS
+			if (-e $request_filename) {
+				break;
+			}',
+				// footer
+				'footer' => '			#
+			# The following 3 lines will rewrite URLs passed through the front controller
+			# to not require app.php in the actual URL. In other words, a controller is
+			# by default accessed at /app.php/my/controller, but can also be accessed at
+			# /my/controller
+			#
+			if (!-e $request_filename) {
+				rewrite ^{WIERD_SLASH}{PHPBB_RPATH}(.*)$ {DEFAULT_SLASH}{PHPBB_RPATH}app.{PHP_EX} last;
+			}
+
+		}
+		# Deny access to internal phpbb files.
+		location ~ /(config\.php|common\.php|includes|cache|files|store|images/avatars/upload) {
+			deny all;
+			# deny was ignored before 0.8.40 for connections over IPv6.
+			# Use internal directive to prohibit access on older versions.
+			internal;
+		}
+
+		# Deny access to version control system directories.
+		location ~ /\.svn|/\.git {
+			deny all;
+			internal;
+		}
+	}
+
+	# If running php as fastcgi, specify php upstream.
+	upstream php {
+		server unix:/tmp/php.sock;
 	}
 }',
 				'prettify' => array(
 					'struct' => array(
 						'find' => array(
 							'`(break|last|permanent);$`m',
-							'`^(location)`m',
+							'`^(\s*)(location|http|server(_name)?|return|root|listen|index |upstream|gzip(_[a-z_]+)?)`m',
 							'`^(\s*)if \(([^)]+)\) {$`Um',
 						),
 						'replace' => array(
 							'<b style="color:brown">\1</b>;',
-							'<b style="color:brown">\1</b>',
+							'\1<b style="color:brown">\2</b>',
 							'\1<b style="color:brown">if </b>(<b style="color:#FF00FF">\2</b>) {',
 						),
 					),
@@ -1234,6 +1324,7 @@ class usu
 				'header_title' => $this->user->lang['SEO_NGIX_CONF'],
 				'header_message' => $this->user->lang['SEO_NGIX_CONF_EXPLAIN'],
 				'filename' => 'ngix.conf',
+				'rewrite_padding' => '			',
 			),
 		);
 
@@ -1241,69 +1332,69 @@ class usu
 		if (!empty($this->core->seo_static['index']))
 		{
 			$rewrite_rules += array(
-				'forum_index' => '	# FORUM INDEX
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_INDEX}{EXT_INDEX}$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]',
+				'forum_index' => '# FORUM INDEX
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_INDEX}{EXT_INDEX}$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]',
 			);
 		}
 		else
 		{
 			$rewrite_rules += array(
-				'forum_index' => '	# FORUM INDEX REWRITERULE WOULD STAND HERE IF USED. "forum" REQUIRES TO BE SET AS FORUM INDEX
-	# RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}forum\.html$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]',
+				'forum_index' => '# FORUM INDEX REWRITERULE WOULD STAND HERE IF USED. "forum" REQUIRES TO BE SET AS FORUM INDEX
+# RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}forum\.html$ {DEFAULT_SLASH}{PHPBB_RPATH}index.{PHP_EX} [QSA,L,NC]',
 			);
 		}
 		$rewrite_rules += array(
-			'forum' => '	# FORUM ALL MODES
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?f=$2&start=$4 [QSA,L,NC]',
-				'topic_vfolder' => '	# TOPIC WITH VIRTUAL FOLDER ALL MODES
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+)/({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?f=$2&t=$4&start=$6 [QSA,L,NC]',
+			'forum' => '# FORUM ALL MODES
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?f=$2&start=$4 [QSA,L,NC]',
+				'topic_vfolder' => '# TOPIC WITH VIRTUAL FOLDER ALL MODES
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_FORUM}|[a-z0-9_-]*{DELIM_FORUM})([0-9]+)/({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?f=$2&t=$4&start=$6 [QSA,L,NC]',
 
-			'topic_nofid' => '	# TOPIC WITHOUT FORUM ID & DELIM ALL MODES
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]*)/?({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?forum_uri=$1&t=$3&start=$5 [QSA,L,NC]',
+			'topic_nofid' => '# TOPIC WITHOUT FORUM ID & DELIM ALL MODES
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]*)/?({STATIC_TOPIC}|[a-z0-9_-]*{DELIM_TOPIC})([0-9]+){TOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?forum_uri=$1&t=$3&start=$5 [QSA,L,NC]',
 		);
 		if ($this->core->seo_opt['profile_noids'])
 		{
 			$rewrite_rules += array(
-				'profile' => '	# PROFILES THROUGH USERNAME
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/?$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&un=$1 [QSA,L,NC]',
+				'profile' => '# PROFILES THROUGH USERNAME
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/?$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&un=$1 [QSA,L,NC]',
 
-				'user_messages' => '	USER MESSAGES THROUGH USERNAME
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author=$1&sr=$2&start=$4 [QSA,L,NC]',
+				'user_messages' => 'USER MESSAGES THROUGH USERNAME
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_USER}/([^/]+)/(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author=$1&sr=$2&start=$4 [QSA,L,NC]',
 			);
 		}
 		else
 		{
 			$rewrite_rules += array(
-				'profile' => '	# PROFILES ALL MODES WITH ID
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){EXT_USER}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&u=$2 [QSA,L,NC]',
+				'profile' => '# PROFILES ALL MODES WITH ID
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){EXT_USER}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=viewprofile&u=$2 [QSA,L,NC]',
 
-				'user_messages' => '	# USER MESSAGES ALL MODES WITH ID
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){DELIM_SR}(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author_id=$2&sr=$3&start=$5 [QSA,L,NC]',
+				'user_messages' => '# USER MESSAGES ALL MODES WITH ID
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_USER}|[a-z0-9_-]*{DELIM_USER})([0-9]+){DELIM_SR}(topics|posts){USER_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?author_id=$2&sr=$3&start=$5 [QSA,L,NC]',
 			);
 		}
 
 		$rewrite_rules += array(
-			'group' => '	# GROUPS ALL MODES
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_GROUP}|[a-z0-9_-]*{DELIM_GROUP})([0-9]+){GROUP_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=group&g=$2&start=$4 [QSA,L,NC]',
-			'posts' => '	# POSTS
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_POST}([0-9]+){EXT_POST}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?p=$1 [QSA,L,NC]',
+			'group' => '# GROUPS ALL MODES
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}({STATIC_GROUP}|[a-z0-9_-]*{DELIM_GROUP})([0-9]+){GROUP_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=group&g=$2&start=$4 [QSA,L,NC]',
+			'posts' => '# POSTS
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_POST}([0-9]+){EXT_POST}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewtopic.{PHP_EX}?p=$1 [QSA,L,NC]',
 
-			'active_topics' => '	# ACTIVE TOPICS
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_ATOPIC}{ATOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=active_topics&start=$2&sr=topics [QSA,L,NC]',
+			'active_topics' => '# ACTIVE TOPICS
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_ATOPIC}{ATOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=active_topics&start=$2&sr=topics [QSA,L,NC]',
 
-			'unanswered_topics' => '	# UNANSWERED TOPICS
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_UTOPIC}{UTOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unanswered&start=$2&sr=topics [QSA,L,NC]',
+			'unanswered_topics' => '# UNANSWERED TOPICS
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_UTOPIC}{UTOPIC_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unanswered&start=$2&sr=topics [QSA,L,NC]',
 
-			'new_posts' => '	# NEW POSTS
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_NPOST}{NPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=newposts&start=$2&sr=topics [QSA,L,NC]',
+			'new_posts' => '# NEW POSTS
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_NPOST}{NPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=newposts&start=$2&sr=topics [QSA,L,NC]',
 
-			'unread_posts' => '	# UNREAD POSTS
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_URPOST}{URPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unreadposts&start=$2 [QSA,L,NC]',
+			'unread_posts' => '# UNREAD POSTS
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_URPOST}{URPOST_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}search.{PHP_EX}?search_id=unreadposts&start=$2 [QSA,L,NC]',
 
-			'the_team' => '	# THE TEAM
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_LEADERS}{EXT_LEADERS}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=leaders [QSA,L,NC]',
+			'the_team' => '# THE TEAM
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_LEADERS}{EXT_LEADERS}$ {DEFAULT_SLASH}{PHPBB_RPATH}memberlist.{PHP_EX}?mode=leaders [QSA,L,NC]',
 
-			'comment_more_rules' => '	# HERE IS A GOOD PLACE TO ADD OTHER PHPBB RELATED REWRITERULES
+			'comment_more_rules' => '# HERE IS A GOOD PLACE TO ADD OTHER PHPBB RELATED REWRITERULES
 ',
 		);
 
@@ -1313,21 +1404,21 @@ class usu
 			$rewrite_rules += $mods_ht['pos1'];
 		}
 		$rewrite_rules += array(
-			'comment_forum_noid' => '	# FORUM WITHOUT ID & DELIM ALL MODES
-	# THESE LINES MUST BE LOCATED AT THE END OF YOUR HTACCESS TO WORK PROPERLY',
+			'comment_forum_noid' => '# FORUM WITHOUT ID & DELIM ALL MODES
+# THESE LINES MUST BE LOCATED AT THE END OF YOUR HTACCESS TO WORK PROPERLY',
 		);
 		if (trim($this->core->seo_ext['forum'],'/'))
 		{
 			$rewrite_rules += array(
 				'forum_noid' => array(
-					'apache' => '	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 [QSA,L,NC]',
-					'ngix' => '	if (!-e $request_filename) {
-		rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
-		rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 last;
-	}',
+					'apache' => 'RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 [QSA,L,NC]',
+					'ngix' => 'if (!-e $request_filename) {
+	rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
+	rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 last;
+}',
 				),
 			);
 		}
@@ -1335,22 +1426,22 @@ class usu
 		{
 			$rewrite_rules += array(
 				'forum_noid' => array(
-					'apache' => '	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]',
-					'ngix' => '	if (!-e $request_filename) {
-		rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
-	}',
+					'apache' => 'RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]',
+					'ngix' => 'if (!-e $request_filename) {
+	rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
+}',
 				),
 			);
 		}
 
 		$rewrite_rules += array(
-			'relative_files' => '	# FIX RELATIVE PATHS : FILES
-	RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(style\.{PHP_EX}|ucp\.{PHP_EX}|mcp\.{PHP_EX}|faq\.{PHP_EX}|download/file.{PHP_EX})$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
+			'relative_files' => '# FIX RELATIVE PATHS : FILES
+RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(style\.{PHP_EX}|ucp\.{PHP_EX}|mcp\.{PHP_EX}|faq\.{PHP_EX}|download/file.{PHP_EX})$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
 
-			'relative_images' => '	# FIX RELATIVE PATHS : IMAGES
-	RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(styles/.*|images/.*)/$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
+			'relative_images' => '# FIX RELATIVE PATHS : IMAGES
+RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(styles/.*|images/.*)/$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
 		);
 
 		// mods server_conf pos2
@@ -1385,7 +1476,9 @@ class usu
 				{
 					$rule = str_replace($translate['find'], $translate['replace'], $rule);
 				}
-				$rewrite_conf_result[$engine] .= "$rule\n";
+
+				$rewrtie_padding = $setup['rewrite_padding'];
+				$rewrite_conf_result[$engine] .= $rewrtie_padding . str_replace("\n", "\n$rewrtie_padding", $rule) . "\n";
 			}
 
 			$rewrite_conf_result[$engine] .= $setup['footer'] . "\n";
