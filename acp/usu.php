@@ -1251,9 +1251,9 @@ http {
 			index index.php index.html index.htm;
 
 			# multi domain ssl aware canonical hostname
-			if ($host != {HOSTNAME}) {
-				rewrite ^ $scheme://{HOSTNAME}$request_uri permanent;
-			}
+			# if ($host != {HOSTNAME}) {
+			# 	rewrite ^ $scheme://{HOSTNAME}$request_uri permanent;
+			# }
 
 			# DO NOT GO FURTHER IF THE REQUESTED FILE / DIR DOES EXISTS
 			if (-e $request_filename) {
