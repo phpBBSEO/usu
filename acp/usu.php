@@ -1244,7 +1244,7 @@ http {
 		#listen 80;
 		server_name {HOSTNAME};
 
-		root {REWRITEBASE};
+		root /{REWRITEBASE};
 
 		location / {
 			# phpbb uses index.htm
@@ -1403,21 +1403,20 @@ RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}{STATIC_LEADERS}{EXT_LEADERS}$ {DEFAULT_S
 		{
 			$rewrite_rules += $mods_ht['pos1'];
 		}
+
 		$rewrite_rules += array(
 			'comment_forum_noid' => '# FORUM WITHOUT ID & DELIM ALL MODES
 # THESE LINES MUST BE LOCATED AT THE END OF YOUR HTACCESS TO WORK PROPERLY',
 		);
+
 		if (trim($this->core->seo_ext['forum'],'/'))
 		{
 			$rewrite_rules += array(
 				'forum_noid' => array(
 					'apache' => 'RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 [QSA,L,NC]',
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+?)(-([0-9]+))?{EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 [QSA,L,NC]',
 					'ngix' => 'if (!-e $request_filename) {
-	rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+)(-([0-9]+)){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
-	rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1 last;
+	rewrite ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+?)(-([0-9]+))?{EXT_FORUM}$ {DEFAULT_SLASH}{PHPBB_RPATH}viewforum.{PHP_EX}?forum_uri=$1&start=$3 last;
 }',
 				),
 			);
