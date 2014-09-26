@@ -711,7 +711,7 @@ class core
 			}
 		}
 
-		return $this->seo_url[$type][$id];
+		return $this->seo_url['topic'][$id];
 	}
 
 	/**
