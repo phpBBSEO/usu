@@ -37,6 +37,7 @@ class query_string_test extends \phpbbseo\usu\tests\phpbb_seo_test_case
 	*/
 	function test_query_string($case, $expected)
 	{
+		$this->configure();
 		$this->assertEquals($expected, $this->phpbb_seo->query_string($case));
 	}
 }
