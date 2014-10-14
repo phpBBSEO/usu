@@ -634,9 +634,11 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 
 	public function core_submit_post_end($event)
 	{
-		global $mode, $post_data; // god save hax
+		global $post_data; // god save hax
 
 		$data = $event['data'];
+		$mode = $event['mode'];
+
 		$post_id = $data['post_id'];
 		$forum_id = $data['forum_id'];
 
@@ -705,6 +707,40 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 		$this->core->set_url($data['forum_name'], $data['forum_id'], 'forum');
 
 		$params = $add_anchor = '';
+
+		// --> Until https://tracker.phpbb.com/browse/PHPBB3-13164 is fixed
+		// we need to compute post_visibility as the global hax fails for some reasons
+		$post_visibility = ITEM_APPROVED;
+
+		// Check the permissions for post approval.
+		// Moderators must go through post approval like ordinary users.
+		if (!$this->auth->acl_get('f_noapprove', $data['forum_id']))
+		{
+			// Post not approved, but in queue
+			$post_visibility = ITEM_UNAPPROVED;
+			switch ($post_mode)
+			{
+				case 'edit_first_post':
+				case 'edit':
+				case 'edit_last_post':
+				case 'edit_topic':
+					$post_visibility = ITEM_REAPPROVE;
+				break;
+			}
+		}
+
+		// MODs/Extensions are able to force any visibility on posts
+		if (isset($data['force_approved_state']))
+		{
+			$post_visibility = (in_array((int) $data['force_approved_state'], array(ITEM_APPROVED, ITEM_UNAPPROVED, ITEM_DELETED, ITEM_REAPPROVE))) ? (int) $data['force_approved_state'] : $post_visibility;
+		}
+		if (isset($data['force_visibility']))
+		{
+			$post_visibility = (in_array((int) $data['force_visibility'], array(ITEM_APPROVED, ITEM_UNAPPROVED, ITEM_DELETED, ITEM_REAPPROVE))) ? (int) $data['force_visibility'] : $post_visibility;
+		}
+
+		$data['post_visibility'] = $post_visibility;
+		// <-- Until https://tracker.phpbb.com/browse/PHPBB3-13164 is fixed
 
 		if ($data['post_visibility'] == ITEM_APPROVED)
 		{
