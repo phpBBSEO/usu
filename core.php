@@ -705,7 +705,7 @@ class core
 				}
 
 				$topic_forum_id = $topic_forum_id ? $topic_forum_id : $topic_data['forum_id'];
-				$parent_forum = $topic_data['topic_type'] == POST_GLOBAL ? $this->seo_static['global_announce'] : (!empty($this->seo_url['forum'][$topic_forum_id]) ? $this->seo_url['forum'][$topic_forum_id] : (!empty($topic_data['forum_name']) ? $phpbb_seo->set_url($topic_data['forum_name'], $topic_forum_id, 'forum') : ''));
+				$parent_forum = $topic_data['topic_type'] == POST_GLOBAL ? $this->seo_static['global_announce'] : (!empty($this->seo_url['forum'][$topic_forum_id]) ? $this->seo_url['forum'][$topic_forum_id] : (!empty($topic_data['forum_name']) ? $this->set_url($topic_data['forum_name'], $topic_forum_id, 'forum') : ''));
 
 				return ($this->seo_url['topic'][$id] = sprintf($this->sftpl['topic' . ($this->modrtype > 2 ? '' : '_smpl')], $parent_forum, $this->modrtype > 2 ? $this->format_url($topic_data['topic_title'], $this->seo_static['topic']) : '', $id));
 			}
