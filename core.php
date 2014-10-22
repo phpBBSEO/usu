@@ -549,7 +549,7 @@ class core
 
 	/**
 	* Of course, there should ba a better way to do that
-	* @TODO investigate if extending helper service is feasiblel
+	* @TODO investigate if extending helper service is feasible
 	*/
 	public function helper_trick()
 	{
@@ -815,9 +815,14 @@ class core
 	* regular phpBB URL rewritting without slowing down the process.
 	* Mimics append_sid with some shortcuts related to how url are rewritten
 	*/
-	public function url_rewrite($url, $params = false, $is_amp = true, $session_id = false, $recache = false)
+	public function url_rewrite($url, $params = false, $is_amp = true, $session_id = false, $is_route = false, $recache = false)
 	{
 		global $_SID, $_EXTRA_URL;
+
+		if ($is_route)
+		{
+			return false;
+		}
 
 		$qs = $anchor = '';
 		$amp_delim = ($is_amp) ? '&amp;' : '&';

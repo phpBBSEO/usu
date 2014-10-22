@@ -368,6 +368,61 @@ class listener implements EventSubscriberInterface
 
 					if (!$this->forum_id)
 					{
+						// here we need to find out if the uri really was a forum one
+						if (!preg_match('`^.+?\.' . $this->php_ext . '(\?.*)?$`', $this->core->seo_path['uri']))
+						{
+							// request url is rewriten
+							// re-route request to app.php
+							global $phpbb_container; // god save the hax
+							$phpbb_root_path = $this->phpbb_root_path;
+							$phpEx = $this->php_ext;
+							include($phpbb_root_path . 'includes/functions_url_matcher.' . $phpEx);
+
+							// we need to overwrite couple SERVER variable to simulate direct app.php call
+							// start with scripts
+							$script_fix_list = array('SCRIPT_FILENAME', 'SCRIPT_NAME', 'PHP_SELF');
+							foreach ($script_fix_list as $varname)
+							{
+								if ($this->request->is_set($varname, \phpbb\request\request_interface::SERVER))
+								{
+									$value = $this->request->server($varname);
+									if ($value)
+									{
+										$value = preg_replace('`^(.*?)viewforum\.' . $this->php_ext . '((\?|/).*)?$`', '\1app.' . $this->php_ext . '\2', $value);
+										$this->request->overwrite($varname, $value, \phpbb\request\request_interface::SERVER);
+									}
+								}
+							}
+
+							// then fix query strings
+							$qs_fix_list = array('QUERY_STRING', 'REDIRECT_QUERY_STRING');
+							foreach ($qs_fix_list as $varname)
+							{
+								if ($this->request->is_set($varname, \phpbb\request\request_interface::SERVER))
+								{
+									$value = $this->request->server($varname);
+									if ($value)
+									{
+										$value = preg_replace('`^forum_uri=[^&]*(&amp;|&)start=((&amp;|&).*)?$`i', '', $value);
+										$this->request->overwrite($varname, $value, \phpbb\request\request_interface::SERVER);
+									}
+								}
+							}
+
+							// Start session management
+							$this->user->session_begin();
+							$this->auth->acl($this->user->data);
+							$this->user->setup('app');
+
+							$http_kernel = $phpbb_container->get('http_kernel');
+							$symfony_request = $phpbb_container->get('symfony_request');
+							$response = $http_kernel->handle($symfony_request);
+							$response->send();
+							$http_kernel->terminate($symfony_request, $response);
+							exit;
+
+						}
+
 						if ($this->core->seo_opt['redirect_404_forum'])
 						{
 							$this->core->seo_redirect($this->core->seo_path['phpbb_url']);
@@ -506,7 +561,7 @@ class listener implements EventSubscriberInterface
 		$this->core->prepare_topic_url($row, $topic_forum_id);
 
 		$view_topic_url_params = 'f=' . $topic_forum_id . '&amp;t=' . $topic_id;
-		$view_topic_url = $topic_row['U_VIEW_TOPIC'] = $this->core->url_rewrite("{$this->phpbb_root_path}viewtopic.{$this->php_ext}", $view_topic_url_params, true, false, true);
+		$view_topic_url = $topic_row['U_VIEW_TOPIC'] = $this->core->url_rewrite("{$this->phpbb_root_path}viewtopic.{$this->php_ext}", $view_topic_url_params, true, false, false, true);
 
 		$event['topic_row'] = $topic_row;
 		$event['row'] = $row;
@@ -628,7 +683,7 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 	{
 		if (!empty($this->core->seo_opt['url_rewrite']))
 		{
-			$event['append_sid_overwrite'] = $this->core->url_rewrite($event['url'], $event['params'], $event['is_amp'], $event['session_id']);
+			$event['append_sid_overwrite'] = $this->core->url_rewrite($event['url'], $event['params'], $event['is_amp'], $event['session_id'], $event['is_route']);
 		}
 	}
 
@@ -765,7 +820,7 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 		}
 
 		$url = (!$params) ? "{$this->phpbb_root_path}viewforum.{$this->php_ext}" : "{$this->phpbb_root_path}viewtopic.{$this->php_ext}";
-		$url = $this->core->url_rewrite($url, 'f=' . $data['forum_id'] . $params, true, false, true) . $add_anchor;
+		$url = $this->core->url_rewrite($url, 'f=' . $data['forum_id'] . $params, true, false, false, true) . $add_anchor;
 
 		$event['url'] = $url;
 		$event['data'] = $data;
