@@ -46,7 +46,7 @@ $lang = array_merge($lang, array(
 	'ACP_SEO_SUPPORT_FORUM' => 'Forum di supporto',
 	// ACP forum URLs
 	'ACP_FORUM_URL'	=> 'Gestione URL forum',
-	'ACP_FORUM_URL_EXPLAIN'		=> 'Puoi vedere cosa c’è nel file di cache contenente il titolo del forum che sovrascriverà il relativo URL.<br/>I forum di colore verde vengono memorizzati nella cache, quelli in rosso lo saranno in seguito.<br/><br/><b style="color:red">Attenzione: </b><br/><em><b>qualsiasi-titolo-fxx/</b> sarà correttamente reindirizzato con Zero duplicati, ma non sarà così se si modifica <b>qualsiasi-titolo/</b> con <b>qualcosa-altro/</b>.<br/> In tal caso, <b>qualsiasi-titolo/</b> sarà trattato come un forum che non esiste se non si impostano i reindirizzamenti appropriati.</em>',	
+	'ACP_FORUM_URL_EXPLAIN'		=> 'Puoi vedere cosa c’è nel file di cache contenente il titolo del forum che sovrascriverà il relativo URL.<br/>I forum di colore verde vengono memorizzati nella cache, quelli in rosso lo saranno in seguito.<br/><br/><b style="color:red">Attenzione: </b><br/><em><b>qualsiasi-titolo-fxx/</b> sarà correttamente reindirizzato con Zero duplicati, ma non sarà così se si modifica <b>qualsiasi-titolo/</b> con <b>qualcosa-altro/</b>.<br/> In tal caso, <b>qualsiasi-titolo/</b> sarà trattato come un forum che non esiste se non si impostano i reindirizzamenti appropriati.</em>',
 	'ACP_NO_FORUM_URL'	=> '<b>Gestione URL forum disabilitata<b><br/>La gestione URL del forum è disponibile solo in modalità avanzata, mista e quando la cache degli URL del forum è attivata.<br/>La gestione URL del forum, già configurata, rimarrà attiva in modalità avanzata e mista.',
 	// ACP .htaccess
 	'ACP_REWRITE_CONF'	=> 'Configurazione server',
