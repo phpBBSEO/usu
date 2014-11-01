@@ -253,12 +253,23 @@ class listener implements EventSubscriberInterface
 
 				$this->core->prepare_topic_url($topic_data, $this->forum_id);
 
+				if (!$this->request->is_set('start'))
+				{
+					if (!empty($post_id))
+					{
+						$this->start = floor(($topic_data['prev_posts']) / $this->config['posts_per_page']) * $this->config['posts_per_page'];
+					}
+				}
+
 				$start = $this->core->seo_chk_start($this->start, $this->config['posts_per_page']);
 
 				if ($this->start != $start)
 				{
 					$this->start = (int) $start;
-					$this->request->overwrite('start', $this->start);
+					if (empty($post_id))
+					{
+						$this->request->overwrite('start', $this->start);
+					}
 				}
 
 				$this->core->seo_path['canonical'] = $this->core->drop_sid(append_sid("{$this->phpbb_root_path}viewtopic.{$this->php_ext}", "f={$this->forum_id}&amp;t={$topic_id}&amp;start={$this->start}"));
@@ -302,9 +313,9 @@ class listener implements EventSubscriberInterface
 
 						$this->core->seo_opt['zero_dupe']['redir_def'] = array(
 							'uid'		=> array('val' => $seo_uid, 'keep' => (boolean) ($keep_hash && $seo_uid)),
-							'f'			=> array('val' => $forum_id, 'keep' => true, 'force' => true),
-							't'			=> array('val' => $topic_id, 'keep' => true, 'force' => true, 'hash' => $post_id ? "p{$post_id}" : ''),
-							'p'			=> array('val' => $post_id, 'keep' =>  ($post_id && $view == 'show' ? true : false), 'hash' => "p{$post_id}"),
+							'f'		=> array('val' => $forum_id, 'keep' => true, 'force' => true),
+							't'		=> array('val' => $topic_id, 'keep' => true, 'force' => true, 'hash' => $post_id ? "p{$post_id}" : ''),
+							'p'		=> array('val' => $post_id, 'keep' =>  ($post_id && $view == 'show' ? true : false), 'hash' => "p{$post_id}"),
 							'watch'		=> array('val' => $seo_watch, 'keep' => $keep_watch),
 							'unwatch'	=> array('val' => $seo_unwatch, 'keep' => $keep_unwatch),
 							'bookmark'	=> array('val' => $seo_bookmark, 'keep' => (boolean) ($user_data['is_registered'] && $this->config['allow_bookmarks'] && $seo_bookmark)),
