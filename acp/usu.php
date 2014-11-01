@@ -146,9 +146,19 @@ class usu
 				{
 					if (@is_bool($this->core->seo_opt[$optionvalue]))
 					{
-						if ($optionvalue == 'virtual_root' && !$this->core->seo_path['phpbb_script'])
+						if ($optionvalue == 'virtual_root')
 						{
-							continue;
+							if (!$this->core->seo_path['phpbb_script'])
+							{
+								continue;
+							}
+
+							if (empty($this->config['force_server_vars']))
+							{
+								// we assume that the force server var will not break everything
+								// since this is in use in all cases in USU
+								set_config('force_server_vars', 1);
+							}
 						}
 
 						$display_vars['vars'][$optionvalue] = array('lang' => $optionvalue, 'validate' => 'bool', 'type' => 'radio:yes_no', 'explain' => true, 'lang_explain' => $optionvalue . '_explain');
@@ -1123,7 +1133,7 @@ class usu
 	#
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}(.*)$ app.{PHP_EX} [QSA,L]
+	RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}(.*)$ {DEFAULT_SLASH}{PHPBB_RPATH}app.{PHP_EX} [QSA,L]
 
 </IfModule>
 
@@ -1435,12 +1445,25 @@ RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}([a-z0-9_-]+){FORUM_PAGINATION}$ {DEFAULT
 			);
 		}
 
+		$fix_left_match = '';
+		$fix_301_redirect = ',R=301';
+		if ($this->core->seo_opt['virtual_root'])
+		{
+			$fix_left_match = '.+/';
+			// do not 301 css and other broken links as this would means many
+			// just serve them as usual instead, it's no such big deal if assets
+			// are served from two urls as long as it's not on the same page.
+			// of course, better would be to fix links from start but it's not
+			// that obvious as long as phpBB does not fully enforces PHPBB_USE_BOARD_URL_PATH (for exts etc ...)
+			$fix_301_redirect = '';
+		}
+
 		$rewrite_rules += array(
 			'relative_files' => '# FIX RELATIVE PATHS : FILES
-RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(style\.{PHP_EX}|ucp\.{PHP_EX}|mcp\.{PHP_EX}|faq\.{PHP_EX}|download/file.{PHP_EX})$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}' . $fix_left_match . '(style\.{PHP_EX}|ucp\.{PHP_EX}|mcp\.{PHP_EX}|faq\.{PHP_EX}|download/file\.{PHP_EX}|report\.{PHP_EX}|adm/index\.{PHP_EX})$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC' . $fix_301_redirect . ']',
 
 			'relative_images' => '# FIX RELATIVE PATHS : IMAGES
-RewriteRule ^{WIERD_SLASH}{PHPBB_RPATH}.+/(styles/.*|images/.*)/$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC,R=301]',
+RewriteRule ^{WIERD_SLASH}{PHPBB_LPATH}' . $fix_left_match . '(styles/.*|images/.*|assets/.*|ext/.*)$ {DEFAULT_SLASH}{PHPBB_RPATH}$1 [QSA,L,NC' . $fix_301_redirect . ']',
 		);
 
 		// mods server_conf pos2
