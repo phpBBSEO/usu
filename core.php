@@ -91,10 +91,10 @@ class core
 		'posting'	=> 1,
 		'faq'		=> 1,
 		'ucp'		=> 1,
-		'swatch'	=> 1,
 		'mcp'		=> 1,
 		'style'		=> 1,
 		'cron'		=> 1,
+		'report'	=> 1,
 	);
 
 	/**
@@ -897,8 +897,16 @@ class core
 			return $this->seo_cache[$url] . $anchor;
 		}
 
-		if (!$this->seo_opt['url_rewrite'] || defined('ADMIN_START') || isset($this->stop_dirs[$this->path]))
+		if (!$this->seo_opt['url_rewrite'] || defined('ADMIN_START'))
 		{
+			return ($this->seo_cache[$url] = $url) . $anchor;
+		}
+
+		if (isset($this->stop_dirs[$this->path]))
+		{
+			// add full url no matter what assuming concerned
+			// scripts will always be phpBB ones
+			$url = $this->seo_path['phpbb_url'] . preg_replace('`^.*?(' . trim($this->path, '/.') . '.*?)$`', '\1', $url);
 			return ($this->seo_cache[$url] = $url) . $anchor;
 		}
 
@@ -906,15 +914,15 @@ class core
 
 		if (isset($this->stop_files[$this->filename]))
 		{
-			// add full url
-			$url = $this->path == $this->phpbb_root_path ? $this->seo_path['phpbb_url'] . preg_replace('`^' . $this->phpbb_root_path . '`', '', $url) : $url;
-
+			// add full url no matter what assuming concerned
+			// scripts will always be phpBB ones
+			$url = $this->seo_path['phpbb_url'] . preg_replace('`^.*?(' . $this->filename . '\.' . $this->php_ext . '.*?)$`', '\1', $url);
 			return ($this->seo_cache[$url] = $url) . $anchor;
 		}
 
 		parse_str(str_replace('&amp;', '&', $qs), $this->get_vars);
 
-		// strp slashes if necessary
+		// strip slashes if necessary
 		if (defined('SEO_STRIP'))
 		{
 			$this->get_vars = array_map(array($this, 'stripslashes'), $this->get_vars);
