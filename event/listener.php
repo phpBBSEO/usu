@@ -366,6 +366,9 @@ class listener implements EventSubscriberInterface
 			return;
 		}
 
+		// this helps fixing several cases of relative links
+		define('PHPBB_USE_BOARD_URL_PATH', true);
+
 		$this->start = max(0, $this->request->variable('start', 0));
 
 		switch($this->core->seo_opt['req_file'])
