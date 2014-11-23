@@ -94,15 +94,16 @@ class listener implements EventSubscriberInterface
 	{
 		return array(
 			'core.common'					=> 'core_common',
+			'core.user_setup'				=> 'core_user_setup',
+			'core.append_sid'				=> 'core_append_sid',
+			'core.pagination_generate_page_link'		=> 'core_pagination_generate_page_link',
 			'core.page_header_after'			=> 'core_page_header_after',
 			'core.page_footer'				=> 'core_page_footer',
-			'core.user_setup'				=> 'core_user_setup',
 			'core.viewforum_modify_topicrow'		=> 'core_viewforum_modify_topicrow',
 			'core.viewtopic_modify_page_title'		=> 'core_viewtopic_modify_page_title',
 			'core.viewtopic_modify_post_row'		=> 'core_viewtopic_modify_post_row',
 			'core.memberlist_view_profile'			=> 'core_memberlist_view_profile',
 			'core.modify_username_string'			=> 'core_modify_username_string',
-			'core.append_sid'				=> 'core_append_sid',
 			'core.submit_post_end'				=> 'core_submit_post_end',
 			'core.posting_modify_template_vars'		=> 'core_posting_modify_template_vars',
 			'core.display_user_activity_modify_actives'	=> 'core_display_user_activity_modify_actives',
@@ -699,6 +700,61 @@ function append_sid($url, $params = false, $is_amp = true, $session_id = false)
 		{
 			$event['append_sid_overwrite'] = $this->core->url_rewrite($event['url'], $event['params'], $event['is_amp'], $event['session_id'], $event['is_route']);
 		}
+	}
+
+	public function core_pagination_generate_page_link($event)
+	{
+		static $paginated = array(), $find = array('{SN}', '{SV}');
+
+		$base_url = $event['base_url'];
+		$on_page = $event['on_page'];
+		$start_name = $event['start_name'];
+		$per_page = $event['per_page'];
+
+		if (!is_string($base_url))
+		{
+			return;
+		}
+
+		// do ourselves a favor
+		$base_url = trim($base_url, '?');
+		if (!isset($paginated[$base_url]))
+		{
+			$rewriten = $this->core->url_rewrite($base_url);
+
+			@list($rewriten, $qs) = explode('?', $rewriten, 2);
+			if (
+				// rewriten urls are absolute
+				!preg_match('`^(https?\:)?//`i', $rewriten) ||
+				// they are not php scripts
+				preg_match('`\.' . $this->php_ext . '$`i', $rewriten)
+			)
+			{
+				// in such case, do as usual
+				$qs = $qs ? "?$qs&amp;" : '?';
+				$paginated[$base_url] = $rewriten . $qs . '{SN}={SV}';
+			}
+			else
+			{
+				$hasExt = preg_match('`^((https?\:)?//[^/]+.+?)(\.[a-z0-9]+)$`i', $rewriten);
+
+				if ($hasExt)
+				{
+					// start location is before the ext
+					$rewriten = preg_replace('`^((https?\:)?//[^/]+.+?)(\.[a-z0-9]+)$`i', '\1' . $this->core->seo_delim['start'] . '{SV}\3', $rewriten);
+				}
+				else
+				{
+					// start is appened
+					$rewriten = rtrim($rewriten, '/') . '/' . $this->core->seo_static['pagination'] .  '{SV}' . $this->core->seo_ext['pagination'];
+				}
+
+				$paginated[$base_url] = $rewriten . ($qs ? "?$qs" : '');
+			}
+		}
+
+		// we'll see if start_name has use cases, and we can still work with rewriterules
+		$event['generate_page_link_override'] = ($on_page > 1) ? str_replace($find, array($start_name, ($on_page - 1) * $per_page), $paginated[$base_url]) : $base_url;
 	}
 
 	public function core_submit_post_end($event)

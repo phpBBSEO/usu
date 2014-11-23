@@ -32,11 +32,3 @@ services:
         tags:
             - { name: event.listener }
 
-    pagination:
-        class: phpbbseo\usu\pagination
-        arguments:
-            - @phpbbseo.usu.core
-            - @template
-            - @user
-            - @controller.helper
-            - %core.php_ext%
