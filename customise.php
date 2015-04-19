@@ -58,21 +58,21 @@ class customise
 		// ==> Delimiters <==
 		// Can be overridden, requires .htaccess update <=
 		// Example :
-		//	core::$seo_delim['forum'] = '-mydelim'; // instead of the default "-f"
+		//	$this->seo_delim['forum'] = '-mydelim'; // instead of the default "-f"
 
 		// ==> Static parts <==
 		// Can be overridden, requires .htaccess update.
 		// Example :
-		//	core::$seo_static['post'] = 'message'; // instead of the default "post"
+		//	$this->seo_static['post'] = 'message'; // instead of the default "post"
 		// !! phpBB files must be treated a bit differently !!
 		// Example :
-		//	core::$seo_static['file'][ATTACHMENT_CATEGORY_QUICKTIME] = 'quicktime'; // instead of the default "qt"
-		//	core::$seo_static['file_index'] = 'my_files_virtual_dir'; // instead of the default "resources"
+		//	$this->seo_static['file'][ATTACHMENT_CATEGORY_QUICKTIME] = 'quicktime'; // instead of the default "qt"
+		//	$this->seo_static['file_index'] = 'my_files_virtual_dir'; // instead of the default "resources"
 
 		// ==> Suffixes <==
 		// Can be overridden, requires .htaccess update <=
 		// Example :
-		// 	core::$seo_ext['topic'] = '/'; // instead of the default ".html"
+		// 	$this->seo_ext['topic'] = '/'; // instead of the default ".html"
 
 		// ==> Forum redirect <==
 		// In case you are using forum id removing and need to edit some forum urls
@@ -80,7 +80,7 @@ class customise
 		//
 		// Example :
 		//
-		// core::$forum_redirect = array(
+		// $this->forum_redirect = array(
 		// 	// 'old-url-without-id-nor-suffix' => forum_id,
 		// 	'old-forum-url' => 23,
 		// 	'another-one' => 32,
