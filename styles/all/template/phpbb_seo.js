@@ -66,7 +66,7 @@ phpbb_seo.external_hrefs = function () {
 	}
 
 	if (phpbb_seo.ext_classes) {
-		var extclass = new RegExp("(^|\s)(" + seo_ext_classes + ")(\s|$)");
+		var extclass = new RegExp("(^|\s)(" + phpbb_seo.ext_classes + ")(\s|$)");
 	}
 
 	if (phpbb_seo.hashfix) {
@@ -104,7 +104,7 @@ phpbb_seo.external_hrefs = function () {
 			$(el).on('click', function () { window.open(this.href); return false; });
 		}
 	}
-}
+};
 
 if (phpbb_seo.external || phpbb_seo.hashfix) {
 	$(document).ready(phpbb_seo.external_hrefs);
