@@ -41,6 +41,9 @@ class listener implements EventSubscriberInterface
 	/* @var \phpbb\db\driver\driver_interface */
 	private $db;
 
+    /** @var \phpbb\language\language */
+    private $language;
+
 	/**
 	* Current $phpbb_root_path
 	* @var string
@@ -77,7 +80,7 @@ class listener implements EventSubscriberInterface
 	* @param string						$php_ext			PHP file extension
 	*
 	*/
-	public function __construct(\phpbbseo\usu\core $core, \phpbb\config\config $config, \phpbb\auth\auth $auth, \phpbb\template\template $template, \phpbb\user $user, \phpbb\request\request $request, \phpbb\db\driver\driver_interface $db, $phpbb_root_path, $php_ext)
+	public function __construct(\phpbbseo\usu\core $core, \phpbb\config\config $config, \phpbb\auth\auth $auth, \phpbb\template\template $template, \phpbb\user $user, \phpbb\request\request $request, \phpbb\db\driver\driver_interface $db, \phpbb\language\language $language, $phpbb_root_path, $php_ext)
 	{
 		$this->core = $core;
 		$this->template = $template;
@@ -86,6 +89,7 @@ class listener implements EventSubscriberInterface
 		$this->auth = $auth;
 		$this->request = $request;
 		$this->db = $db;
+        $this->language = $language;
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->php_ext = $php_ext;
 	}
@@ -558,7 +562,7 @@ class listener implements EventSubscriberInterface
 			$output = '<a href="http://www.phpbb-seo.com/" title="' . $this->core->seo_opt['copyrights']['title'] . '">' . $this->core->seo_opt['copyrights']['txt'] . '</a>';
 		}
 
-		$this->user->lang['TRANSLATION_INFO'] = (!empty($this->user->lang['TRANSLATION_INFO']) ? $this->user->lang['TRANSLATION_INFO'] . '<br>' : '') . $output;
+		$this->language->lang('TRANSLATION_INFO', (!empty($this->user->lang['TRANSLATION_INFO']) ? $this->user->lang['TRANSLATION_INFO'] . '<br>' : '') . $output);
 
 		$this->template->assign_vars(array(
 			'U_CANONICAL'	=> $this->core->get_canonical(),

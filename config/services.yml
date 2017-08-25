@@ -27,6 +27,7 @@ services:
             - @user
             - @request
             - @dbal.conn
+            - @language
             - %core.root_path%
             - %core.php_ext%
         tags:
